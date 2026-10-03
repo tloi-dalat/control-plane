@@ -1,0 +1,49 @@
+# One ArgoCD Application per directory clusters/dev/<namespace>/<app>:
+#   clusters/dev/oj/django   → Application "oj-django", namespace oj
+#   clusters/dev/quiz/web    → Application "quiz-web",  namespace quiz   (later: just add the directory)
+# Applied once by hand at bootstrap; everything after is a git commit.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: dev
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/tloi-dalat/control-plane.git
+        revision: main
+        directories:
+          - path: clusters/dev/*/*
+  syncPolicy:
+    # Deleting this ApplicationSet must never take the workloads (or volumes)
+    # down with it.
+    preserveResourcesOnDeletion: true
+  template:
+    metadata:
+      name: '{{ index .path.segments 2 }}-{{ index .path.segments 3 }}'
+      annotations:
+        argocd.argoproj.io/manifest-generate-paths: .
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/tloi-dalat/control-plane.git
+        targetRevision: main
+        path: '{{ .path.path }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{ index .path.segments 2 }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        # Apps come up in any order (e.g. the migrate hook before the secrets
+        # exist); retries let it converge instead of failing once.
+        retry:
+          limit: 10
+          backoff: { duration: 30s, factor: 2, maxDuration: 10m }
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - PruneLast=true

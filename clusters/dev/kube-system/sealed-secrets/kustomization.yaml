@@ -1,0 +1,20 @@
+# Decrypts the SealedSecrets committed under clusters/dev/*/secrets.
+#
+# ITS PRIVATE KEY IS THE ONE THING IN THIS CLUSTER YOU CANNOT RECREATE.
+# Back it up off the VPS right after first install (bootstrap/dev/README.md,
+# step 6). A rebuilt cluster with a new key can't read any committed secret.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmCharts:
+  - repo: https://bitnami-labs.github.io/sealed-secrets
+    name: sealed-secrets
+    version: 2.20.0
+    namespace: kube-system
+    releaseName: sealed-secrets-controller
+    valuesInline:
+      # kubeseal's defaults: --controller-name sealed-secrets-controller
+      #                      --controller-namespace kube-system
+      fullnameOverride: sealed-secrets-controller
+      resources:
+        requests: { cpu: 10m, memory: 32Mi }
+        limits: { memory: 128Mi }

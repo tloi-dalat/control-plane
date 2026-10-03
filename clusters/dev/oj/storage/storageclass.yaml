@@ -1,0 +1,8 @@
+# Pre-created volumes only: nothing here provisions or deletes disks.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-static
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain

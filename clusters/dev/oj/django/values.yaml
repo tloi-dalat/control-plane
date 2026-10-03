@@ -1,0 +1,55 @@
+# Shared by site, bridge and celery (role overrides: site.yaml, bridge.yaml,
+# celery.yaml — lists there REPLACE the lists here, maps merge).
+#
+# CI bumps image.tag in THIS file: one tag moves all three roles together.
+# Non-secret settings only. Secrets come from the oj-secrets SealedSecret.
+image:
+  repository: ghcr.io/tloi-dalat/oj-site
+  tag: main-0000000   # CHANGEME: replaced by the first CI deploy (or set any pushed main-<sha>)
+
+env:
+  ENV: dev
+  # Test hostname during side-by-side; switch to oj-dev.tloi.vn at cutover
+  # (dev plan §8). Everything URL-shaped derives from this one value.
+  SITE__DOMAIN: oj-dev-k8s.tloi.vn
+  SITE__NAME: TLOJ
+  DJANGO__DEBUG: "false"
+  MYSQL__HOST: mysql            # Service → host MySQL (see ../mysql)
+  MYSQL__PORT: "3306"
+  MYSQL__DATABASE: dmoj
+  MYSQL__USER: dmoj_k8s
+  REDIS__HOST: oj-redis
+  REDIS__CACHE_DB: "1"
+  REDIS__CELERY_DB: "2"
+  PROBLEM__DATA_ROOT: /problems
+  MEDIA__ROOT: /media
+  BRIDGE__CONNECT_HOST: oj-bridge
+  EVENT__POST: ws://oj-wsevent:15101/
+  # No MTA in the cluster: dev prints mail to the pod log.
+  MAIL__BACKEND: django.core.mail.backends.console.EmailBackend
+  MAIL__ADMINS: kitsune:minhquandinhcao@gmail.com
+  # OAuth client ID is public (it appears in every login redirect).
+  # The client SECRET lives in oj-secrets.
+  SOCIAL__GOOGLE_KEY: 15854195969-1d595g1fuu6fu6qabi0ht7952sm01tq4.apps.googleusercontent.com
+  LOG__LEVEL: INFO
+
+envFrom:
+  - secretRef: { name: oj-secrets }
+
+podSecurityContext:
+  # Must match the owner of the existing media and problem directories on the
+  # dev VPS, or uploads fail with "Permission denied".
+  runAsUser: 1000      # CHANGEME: `id -u tloi` on the dev VPS
+  runAsGroup: 1000     # CHANGEME: `id -g tloi`
+  runAsNonRoot: true
+  # No fsGroup, on purpose: kubelet would recursively chown the existing media
+  # and problem directories on every mount.
+
+volumes:
+  - name: media
+    persistentVolumeClaim: { claimName: oj-media }
+  - name: problems
+    persistentVolumeClaim: { claimName: oj-problems }
+volumeMounts:
+  - { name: media, mountPath: /media }
+  - { name: problems, mountPath: /problems }

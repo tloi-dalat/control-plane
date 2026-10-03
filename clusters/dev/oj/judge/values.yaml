@@ -1,0 +1,56 @@
+# The judge runs UNTRUSTED code submitted by any user. In dev it shares the node
+# with everything else (one VPS), so the controls below are the isolation:
+#   - cptbox sandbox (ptrace + seccomp) inside the container
+#   - NetworkPolicy: may reach the bridge and DNS, nothing else — not MySQL,
+#     not Redis, not the Kubernetes API, not the internet
+#   - no ServiceAccount token, problem data read-only, own Secret with only its key
+# Prove it with the hostile-submission test before cutover (dev plan §5.3).
+# In prd the judge moves to its own tainted node.
+kind: StatefulSet            # stable identities: oj-judge-0, oj-judge-1, …
+replicaCount: 1              # each pod needs its name registered in the site admin
+image:
+  repository: ghcr.io/tloi-dalat/oj-judge
+  tag: main-0000000          # CHANGEME: replaced by the first CI deploy
+args: ["run", "-c", "/config/judge.yml", "oj-bridge", "$(JUDGE__NAME)", "$(JUDGE__KEY)"]
+env:
+  # The image already contains an installed judge; skip the entrypoint's
+  # network-dependent `pip install -e .` on every restart.
+  DMOJ_SKIP_DEV_INSTALL: "1"
+  JUDGE__NAME:
+    valueFrom: { fieldRef: { fieldPath: metadata.name } }
+  JUDGE__KEY:
+    valueFrom: { secretKeyRef: { name: oj-judge-secrets, key: JUDGE__KEY } }
+# Starts as root on purpose: the entrypoint drops to the `judge` user itself
+# (setpriv). cptbox needs ptrace; it installs its own seccomp filter per
+# sandboxed process, which the runtime's default profile would block.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities: { add: ["SYS_PTRACE"] }
+  seccompProfile: { type: Unconfined }
+resources:
+  requests: { cpu: 500m, memory: 512Mi }
+  limits: { cpu: "2", memory: 1536Mi }   # JVM/Kotlin compiles are the peak
+volumes:
+  - name: config
+    configMap: { name: oj-judge-config }
+  - name: problems
+    persistentVolumeClaim: { claimName: oj-problems, readOnly: true }
+volumeMounts:
+  - { name: config, mountPath: /config, readOnly: true }
+  - { name: problems, mountPath: /problems, readOnly: true }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress, Egress]
+  ingress: []                # nothing connects to a judge
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: oj-bridge } }
+      ports:
+        - { port: 9999, protocol: TCP }
+    # Without DNS it can't resolve "oj-bridge".
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { k8s-app: kube-dns } }
+      ports:
+        - { port: 53, protocol: UDP }
+        - { port: 53, protocol: TCP }

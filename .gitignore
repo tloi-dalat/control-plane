@@ -1,0 +1,9 @@
+# Plaintext secrets and keys must never be committed. Only kubeseal output
+# (clusters/*/*/secrets/*.yaml) belongs in git.
+*.pem
+*.key
+credentials.json
+*-credentials.json
+argocd-deploy-key*
+sealed-secrets-key*.yaml
+.DS_Store

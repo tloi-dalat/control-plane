@@ -1,0 +1,30 @@
+# The three Django processes: one image, one shared values.yaml, one ArgoCD app.
+# Sharing an app means the migrate PreSync hook (site.yaml) runs before ANY of
+# site, bridge or celery is updated, so none of them meets a schema it doesn't
+# expect.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - repo: oci://ghcr.io/tloi-dalat/charts
+    name: app
+    version: 0.1.0
+    namespace: oj
+    releaseName: oj-site
+    valuesFile: values.yaml
+    additionalValuesFiles: [site.yaml]
+  - repo: oci://ghcr.io/tloi-dalat/charts
+    name: app
+    version: 0.1.0
+    namespace: oj
+    releaseName: oj-bridge
+    valuesFile: values.yaml
+    additionalValuesFiles: [bridge.yaml]
+  - repo: oci://ghcr.io/tloi-dalat/charts
+    name: app
+    version: 0.1.0
+    namespace: oj
+    releaseName: oj-celery
+    valuesFile: values.yaml
+    additionalValuesFiles: [celery.yaml]

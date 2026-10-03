@@ -1,0 +1,25 @@
+# The only way into the cluster: an outbound tunnel to Cloudflare.
+# Nothing on the VPS listens on a public port.
+image:
+  repository: cloudflare/cloudflared
+  tag: 2026.9.3
+replicaCount: 2              # stateless; Cloudflare balances across connectors
+args: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config/config.yaml", "run"]
+ports:
+  - { name: metrics, containerPort: 2000 }
+service: { enabled: false }
+probes:
+  liveness: { httpGet: { path: /ready, port: metrics }, initialDelaySeconds: 10, periodSeconds: 10, failureThreshold: 3 }
+  readiness: { httpGet: { path: /ready, port: metrics }, periodSeconds: 10 }
+podSecurityContext: { runAsUser: 65532, runAsGroup: 65532, runAsNonRoot: true }   # image's nonroot user
+volumes:
+  - name: config
+    configMap: { name: oj-cloudflared-config }
+  - name: creds
+    secret: { secretName: cloudflared-credentials }
+volumeMounts:
+  - { name: config, mountPath: /etc/cloudflared/config, readOnly: true }
+  - { name: creds, mountPath: /etc/cloudflared/creds, readOnly: true }
+resources:
+  requests: { cpu: 10m, memory: 32Mi }
+  limits: { cpu: 250m, memory: 128Mi }
