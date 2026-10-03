@@ -1,0 +1,12 @@
+# App repos deploy by sending `sync-version` here (reuse-workflow dispatch.yaml).
+# This turns it into a bot commit bumping image.tag; ArgoCD does the rest.
+name: Dispatch
+run-name: Sync ${{ github.event.client_payload.environment }}/${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.apps }} → ${{ github.event.client_payload.version }} (${{ github.event.client_payload.actor }})
+on:
+  repository_dispatch:
+    types: [sync-version]
+jobs:
+  sync:
+    permissions:
+      contents: write
+    uses: tloi-dalat/reuse-workflow/.github/workflows/control-plane-repo-dispatch.yaml@main
