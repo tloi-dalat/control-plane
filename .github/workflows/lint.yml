@@ -9,6 +9,6 @@ jobs:
   lint:
     permissions:
       contents: read
-    uses: tloi-dalat/reuse-workflow/.github/workflows/control-plane-lint.yaml@main
+    uses: tloi-dalat/reusable-workflow/.github/workflows/control-plane-lint.yaml@main
     with:
       kubernetes-version: 1.36.5   # match the k3s version in bootstrap/dev/README.md

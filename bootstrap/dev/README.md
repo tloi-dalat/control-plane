@@ -14,7 +14,8 @@ cloudflared `2026.9.3`.
 ## 0. Before touching the VPS
 
 1. **Push the repos in this order**, since each depends on the previous one:
-   1. `tloi-dalat/reuse-workflow`. Make it **public**, or allow org access (see its README).
+   1. `tloi-dalat/reusable-workflow`. It must be **public**: the app repos calling it are public, and
+      GitHub doesn't let a public repo call workflows in a private one.
    2. `tloi-dalat/charts`. Its workflow publishes `charts/app:0.1.0`. Then on GHCR, set the package
       **public**, because ArgoCD pulls it without credentials.
    3. `tloi-dalat/control-plane` (this repo, private).
