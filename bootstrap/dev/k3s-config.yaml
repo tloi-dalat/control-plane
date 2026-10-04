@@ -3,6 +3,9 @@ write-kubeconfig-mode: "0600"
 disable:
   - traefik     # no ingress controller: cloudflared routes straight to Services
   - servicelb   # nothing uses type: LoadBalancer; no public ports
+# One node: route pod traffic directly instead of VXLAN, so k3s never opens
+# UDP 8472 on a VPS that has no firewall in front of it.
+flannel-backend: host-gw
 node-label:
   - tloi.vn/data-node=true   # media/problem volumes are pinned to this node
 # Keep k3s's embedded NetworkPolicy controller ON (the default) — it is what

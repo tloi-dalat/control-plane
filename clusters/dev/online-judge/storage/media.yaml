@@ -1,4 +1,4 @@
-# Problem test data (DMOJ_PROBLEM_DATA_ROOT). Site and celery write it; bridge and judge mount it read-only.
+# User uploads (MEDIA_ROOT): martor images, PDF statements, submission files. Nothing regenerates these — they are what the daily backup exists for.
 #
 # SAFETY: persistentVolumeReclaimPolicy Retain + Prune=false/Delete=false.
 # The ApplicationSet prunes; without these, a renamed directory or a bad revert
@@ -7,17 +7,17 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: oj-dev-problems
+  name: online-judge-dev-media
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   capacity:
-    storage: 100Gi
+    storage: 50Gi
   accessModes: [ReadWriteOnce]       # one node; several pods on it may mount it
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-static
   local:
-    path: /home/tloi/problems   # CHANGEME: existing directory on the dev VPS (must exist)
+    path: /home/tloi/data/online-judge/media      # created in setup step 1.3 (must exist)
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -27,13 +27,13 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: oj-problems
+  name: online-judge-media
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   storageClassName: local-static
-  volumeName: oj-dev-problems                # bind to exactly this volume
+  volumeName: online-judge-dev-media                # bind to exactly this volume
   accessModes: [ReadWriteOnce]
   resources:
     requests:
-      storage: 100Gi
+      storage: 50Gi

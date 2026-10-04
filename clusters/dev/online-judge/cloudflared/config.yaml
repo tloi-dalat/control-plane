@@ -13,13 +13,13 @@ no-autoupdate: true
 ingress:
   # Browser websocket (daemon accepts any path).
   - path: ^/event/
-    service: http://oj-wsevent:15100
+    service: http://online-judge-wsevent:15100
   # Long-poll fallback. The daemon REQUIRES the /channels/ prefix — verified;
   # an nginx-style prefix strip would 404 here.
   - path: ^/channels/
-    service: http://oj-wsevent:15102
+    service: http://online-judge-wsevent:15102
   # User uploads (URL prefixes from dmoj/settings.py).
   - path: ^/(martor|pdf|submission_file|static-upload)/
-    service: http://oj-media:8080
+    service: http://online-judge-media:8080
   # Everything else: Django (WhiteNoise serves /static/ and root files).
-  - service: http://oj-site:8000
+  - service: http://online-judge-site:8000

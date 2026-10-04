@@ -14,7 +14,7 @@ probes:
 podSecurityContext: { runAsUser: 65532, runAsGroup: 65532, runAsNonRoot: true }   # image's nonroot user
 volumes:
   - name: config
-    configMap: { name: oj-cloudflared-config }
+    configMap: { name: online-judge-cloudflared-config }
   - name: creds
     secret: { secretName: cloudflared-credentials }
 volumeMounts:

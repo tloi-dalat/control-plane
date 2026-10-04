@@ -6,6 +6,6 @@ helmCharts:
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
     version: 0.1.0
-    namespace: oj
-    releaseName: oj-wsevent
+    namespace: online-judge
+    releaseName: online-judge-redis
     valuesFile: values.yaml

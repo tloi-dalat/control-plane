@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Create the SealedSecrets for one environment of the `oj` namespace.
+# Create the SealedSecrets for one environment of the `online-judge` namespace.
 #
 #   bootstrap/seal-secrets.sh <env> [cloudflared-credentials.json]
 #
 # Plaintext never touches disk and never appears in a process list: values are
 # generated or prompted for, fed to kubectl through a file descriptor, and only
-# kubeseal's encrypted output is written to clusters/<env>/oj/secrets/.
+# kubeseal's encrypted output is written to clusters/<env>/online-judge/secrets/.
 #
 # Needs: kubectl (pointing at the cluster) and kubeseal — or set
 # SEALED_SECRETS_CERT to the controller's public cert (kubeseal --fetch-cert)
@@ -14,7 +14,7 @@ set -euo pipefail
 
 ENVIRONMENT=${1:?usage: seal-secrets.sh <env> [cloudflared-credentials.json]}
 CREDS_JSON=${2:-}
-NS=oj
+NS=online-judge
 OUT="clusters/${ENVIRONMENT}/${NS}/secrets"
 
 cd "$(dirname "$0")/.."
@@ -32,8 +32,8 @@ fi
 
 # Re-sealing rotates every generated key: all sessions are logged out and the
 # judge key must be re-entered in the admin. Make that a deliberate choice.
-if [[ -e "${OUT}/oj-secrets.yaml" && "${FORCE:-}" != 1 ]]; then
-  echo "${OUT}/oj-secrets.yaml exists. Re-run with FORCE=1 to rotate everything." >&2
+if [[ -e "${OUT}/online-judge-secrets.yaml" && "${FORCE:-}" != 1 ]]; then
+  echo "${OUT}/online-judge-secrets.yaml exists. Re-run with FORCE=1 to rotate everything." >&2
   exit 1
 fi
 
@@ -62,10 +62,10 @@ printf '%s\n' \
   "EVENT__CONTEST_KEY=$(rand 64)" \
   "EVENT__TICKET_KEY=$(rand 64)" \
   "SOCIAL__GOOGLE_SECRET=${google_secret}" \
-  | seal oj-secrets
+  | seal online-judge-secrets
 
 # The judge gets its own Secret holding ONLY its key: it runs untrusted code.
-printf '%s\n' "JUDGE__KEY=${judge_key}" | seal oj-judge-secrets
+printf '%s\n' "JUDGE__KEY=${judge_key}" | seal online-judge-judge-secrets
 
 if [[ -n "$CREDS_JSON" ]]; then
   kubectl create secret generic cloudflared-credentials -n "$NS" --dry-run=client -o yaml \
@@ -90,7 +90,7 @@ cat >&2 <<MSG
 Done. Commit ${OUT}/ and push.
 
 Register the judge in the ${ENVIRONMENT} site admin (Admin → Judges → Add judge):
-  name: oj-judge-0
+  name: online-judge-judge-0
   key:  ${judge_key}
 This is the only time the key is shown in plain text.
 MSG

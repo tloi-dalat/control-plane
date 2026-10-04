@@ -1,5 +1,5 @@
 # One ArgoCD Application per directory clusters/dev/<namespace>/<app>:
-#   clusters/dev/oj/django   → Application "oj-django", namespace oj
+#   clusters/dev/online-judge/django   → Application "online-judge-django", namespace online-judge
 #   clusters/dev/quiz/web    → Application "quiz-web",  namespace quiz   (later: just add the directory)
 # Applied once by hand at bootstrap; everything after is a git commit.
 apiVersion: argoproj.io/v1alpha1

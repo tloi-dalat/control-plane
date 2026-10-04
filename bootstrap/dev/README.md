@@ -24,7 +24,7 @@ cloudflared `2026.9.3`.
 3. **Merge the `feat/k8s-dev` branches** in `TLOJ` and `judge-server`. Their first `main` builds push
    `oj-site`, `oj-wsevent` and `oj-judge` to GHCR, then commit tag bumps here, replacing `main-0000000`.
    Set the three packages **public** (or add an image pull secret).
-   *Check:* `git log` here shows `[BOT] dev/oj: …` commits; `grep -rn main-0000000 clusters/` is empty.
+   *Check:* `git log` here shows `[BOT] dev/online-judge: …` commits; `grep -rn main-0000000 clusters/` is empty.
 4. **Rotate the Google OAuth client secret** (the old one appeared in a chat transcript). Add both
    redirect URIs to the client: `https://oj-dev-k8s.tloi.vn/complete/google-oauth2/` and
    `https://oj-dev.tloi.vn/complete/google-oauth2/`.
@@ -33,8 +33,8 @@ cloudflared `2026.9.3`.
    id tloi                                    # → runAsUser / runAsGroup
    grep -n "MEDIA_ROOT\|PROBLEM_DATA_ROOT" /home/tloi/site/dmoj/local_settings.py
    ```
-   Put the paths in `clusters/dev/oj/storage/{media,problems}.yaml` and the IDs in
-   `clusters/dev/oj/django/values.yaml` and `clusters/dev/oj/media/values.yaml`. Commit.
+   Put the paths in `clusters/dev/online-judge/storage/{media,problems}.yaml` and the IDs in
+   `clusters/dev/online-judge/django/values.yaml` and `clusters/dev/online-judge/media/values.yaml`. Commit.
 
 ## 1. Prepare the VPS
 
@@ -46,7 +46,7 @@ free -h          # expect ~8 GB
 
 ## 2. MySQL: reachable from pods, nowhere else
 
-Pods reach the host at `10.42.0.1` (see `clusters/dev/oj/mysql/mysql.yaml`), so MySQL must listen
+Pods reach the host at `10.42.0.1` (see `clusters/dev/online-judge/mysql/mysql.yaml`), so MySQL must listen
 beyond loopback, and the firewall must allow **only** the pod network.
 
 ```bash
@@ -109,7 +109,7 @@ kubectl apply -f clusters/dev/application-set.yaml
 kubectl -n argocd get applications -w
 ```
 
-`kube-system-sealed-secrets` goes Healthy first. The `oj-*` apps keep retrying until secrets exist
+`kube-system-sealed-secrets` goes Healthy first. The `online-judge-*` apps keep retrying until secrets exist
 (step 7). That's expected.
 
 ## 6. Back up the sealed-secrets key: do not skip
@@ -135,7 +135,7 @@ cloudflared tunnel create tloj-dev                    # prints the UUID, writes 
 cloudflared tunnel route dns tloj-dev oj-dev-k8s.tloi.vn   # TEST hostname only, for now
 ```
 
-Put the UUID into `clusters/dev/oj/cloudflared/config.yaml`. Then seal, on the VPS:
+Put the UUID into `clusters/dev/online-judge/cloudflared/config.yaml`. Then seal, on the VPS:
 
 ```bash
 curl -sSL https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.40.0/kubeseal-0.40.0-linux-amd64.tar.gz \
@@ -146,13 +146,13 @@ bootstrap/seal-secrets.sh dev ~/.cloudflared/<UUID>.json
 It prompts for the MySQL password (step 2) and the **rotated** Google secret, generates every other
 key, and prints the judge key **once**. Then:
 
-- In the dev site admin → **Judges → Add judge**: name `oj-judge-0`, key as printed. (A new identity, so
+- In the dev site admin → **Judges → Add judge**: name `online-judge-judge-0`, key as printed. (A new identity, so
   the old Docker judge keeps its own during side-by-side.)
-- Commit `clusters/dev/oj/secrets/` and `cloudflared/config.yaml`, then push.
+- Commit `clusters/dev/online-judge/secrets/` and `cloudflared/config.yaml`, then push.
 - Keep the tunnel credentials JSON in your password manager, and delete other copies.
 
 **Check:** `kubectl -n argocd get applications` shows everything **Synced / Healthy**.
-`kubectl -n oj get pods`: all Running, `oj-site-migrate` Completed.
+`kubectl -n online-judge get pods`: all Running, `online-judge-site-migrate` Completed.
 
 ## 8. Smoke test on https://oj-dev-k8s.tloi.vn
 
@@ -166,10 +166,10 @@ The old stack still serves `oj-dev.tloi.vn`, untouched.
 - [ ] Edit a problem's test data in admin and save (problem volume is writable).
 - [ ] **Judge isolation.** Simulate a sandbox escape by opening connections from inside the judge pod:
   ```bash
-  j() { kubectl -n oj exec oj-judge-0 -- timeout 5 bash -c "</dev/tcp/$1/$2" && echo "OPEN  $1:$2" || echo "blocked $1:$2"; }
-  j oj-bridge 9999          # must be OPEN    (its only job)
+  j() { kubectl -n online-judge exec online-judge-judge-0 -- timeout 5 bash -c "</dev/tcp/$1/$2" && echo "OPEN  $1:$2" || echo "blocked $1:$2"; }
+  j online-judge-bridge 9999          # must be OPEN    (its only job)
   j 10.42.0.1 3306          # must be blocked (MySQL)
-  j oj-redis 6379           # must be blocked
+  j online-judge-redis 6379           # must be blocked
   j kubernetes.default 443  # must be blocked (API)
   j 1.1.1.1 443             # must be blocked (internet)
   ```
@@ -178,8 +178,8 @@ The old stack still serves `oj-dev.tloi.vn`, untouched.
 
 ## 9. Cut over
 
-1. PR: in `clusters/dev/oj/django/values.yaml` set `SITE__DOMAIN: oj-dev.tloi.vn`. Merge, and wait
-   for `oj-django` to be Synced.
+1. PR: in `clusters/dev/online-judge/django/values.yaml` set `SITE__DOMAIN: oj-dev.tloi.vn`. Merge, and wait
+   for `online-judge-django` to be Synced.
 2. Move the hostname to the new tunnel:
    ```bash
    cloudflared tunnel route dns --overwrite-dns tloj-dev oj-dev.tloi.vn
@@ -195,7 +195,7 @@ against the same database, which is safe because they run the same commit.
 ## 10. Daily backups
 
 Install the backup job from the design doc §11.4 (systemd timer, `mysqldump` and `restic` off-site),
-pointed at the paths in `clusters/dev/oj/storage/`. Then **restore once**, deliberately, to prove it works.
+pointed at the paths in `clusters/dev/online-judge/storage/`. Then **restore once**, deliberately, to prove it works.
 
 ## 11. After a quiet week: remove the old stack
 

@@ -6,12 +6,12 @@ helmCharts:
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
     version: 0.1.0
-    namespace: oj
-    releaseName: oj-cloudflared
+    namespace: online-judge
+    releaseName: online-judge-cloudflared
     valuesFile: values.yaml
 # Routing lives here, in git: a route change is a reviewed PR. The hash suffix
 # makes an edit roll the pods. (Cloudflare drops open websockets when the
 # config reloads — browsers reconnect — but avoid changes during a contest.)
 configMapGenerator:
-  - name: oj-cloudflared-config
+  - name: online-judge-cloudflared-config
     files: [config.yaml]

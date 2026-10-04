@@ -11,14 +11,14 @@ probes:
   readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
   liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6 }
 podSecurityContext:
-  runAsUser: 1000      # CHANGEME: same UID as django/values.yaml (must read the media files)
-  runAsGroup: 1000     # CHANGEME
+  runAsUser: 1001      # same UID as django/values.yaml (must read the media files)
+  runAsGroup: 1001
   runAsNonRoot: true
 volumes:
   - name: media
-    persistentVolumeClaim: { claimName: oj-media, readOnly: true }
+    persistentVolumeClaim: { claimName: online-judge-media, readOnly: true }
   - name: conf
-    configMap: { name: oj-media-nginx }
+    configMap: { name: online-judge-media-nginx }
   - name: tmp
     emptyDir: {}
 volumeMounts:

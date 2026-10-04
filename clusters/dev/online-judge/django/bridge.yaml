@@ -15,6 +15,6 @@ resources:
 # Problem data read-only (as upstream VNOJ mounts it); no media.
 volumes:
   - name: problems
-    persistentVolumeClaim: { claimName: oj-problems, readOnly: true }
+    persistentVolumeClaim: { claimName: online-judge-problems, readOnly: true }
 volumeMounts:
   - { name: problems, mountPath: /problems, readOnly: true }

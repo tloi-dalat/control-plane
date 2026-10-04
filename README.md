@@ -10,7 +10,7 @@ Same shape as Cake's `control-plane`, rebuilt for TLOI.
 tloi-dalat/TLOJ, judge-server  ──build──▶  ghcr.io/tloi-dalat/oj-*:main-<sha>
         │ repository_dispatch "sync-version"
         ▼
-control-plane  ── bot commit: clusters/dev/oj/<app>/values.yaml image.tag ──▶  ArgoCD (in cluster) syncs
+control-plane  ── bot commit: clusters/dev/online-judge/<app>/values.yaml image.tag ──▶  ArgoCD (in cluster) syncs
 ```
 
 ## Layout
@@ -20,7 +20,7 @@ clusters/
   dev/                            ← dev VPS (oj-dev.tloi.vn). Prd is not here yet.
     application-set.yaml          ← one ArgoCD app per directory below (applied once at bootstrap)
     kube-system/sealed-secrets/   ← decrypts committed SealedSecrets
-    oj/                           ← namespace "oj"
+    online-judge/                           ← namespace "online-judge"
       django/    site + bridge + celery: one image, shared values.yaml, migrate PreSync hook
       wsevent/   live-update daemon
       judge/     DMOJ judge (StatefulSet, ptrace sandbox, egress-only NetworkPolicy)
@@ -35,8 +35,8 @@ bootstrap/
   seal-secrets.sh
 ```
 
-App names are `<namespace>-<dir>` (e.g. `oj-django`), and resources are named after the Helm release
-(`oj-site`, `oj-bridge`, …). Adding a service later, say `quiz`, means adding `clusters/dev/quiz/<app>/`. The
+App names are `<namespace>-<dir>` (e.g. `online-judge-django`), and resources are named after the Helm release
+(`online-judge-site`, `online-judge-bridge`, …). Adding a service later, say `quiz`, means adding `clusters/dev/quiz/<app>/`. The
 ApplicationSet picks it up without any change.
 
 ## Common changes
@@ -47,7 +47,7 @@ ApplicationSet picks it up without any change.
 | Roll back | `git revert` the bot commit (or set `image.tag` to the previous `main-<sha>`) and merge |
 | Change a setting | Edit `env:` in the app's `values.yaml`. **Non-secret values only**, which CI enforces |
 | Change a secret | Re-run `bootstrap/seal-secrets.sh` (see its header), commit the encrypted output |
-| Change routing | `clusters/dev/oj/cloudflared/config.yaml` |
+| Change routing | `clusters/dev/online-judge/cloudflared/config.yaml` |
 | Scale | `replicaCount` (site only; bridge, wsevent and redis must stay at 1) |
 
 Every app uses the shared chart `oci://ghcr.io/tloi-dalat/charts/app`, pinned in each
@@ -59,10 +59,10 @@ Every app uses the shared chart `oci://ghcr.io/tloi-dalat/charts/app`, pinned in
 
 | Where | What |
 |---|---|
-| `oj/storage/{media,problems}.yaml` | the existing media and problem-data directories on the dev VPS |
-| `oj/django/values.yaml`, `oj/media/values.yaml` | UID/GID owning those directories (`id tloi`) |
-| `oj/cloudflared/config.yaml` | tunnel UUID from `cloudflared tunnel create tloj-dev` |
-| `oj/{django,wsevent,judge}/values.yaml` | `image.tag`, set by the first CI deploy |
+| `online-judge/storage/{media,problems}.yaml` | the existing media and problem-data directories on the dev VPS |
+| `online-judge/django/values.yaml`, `online-judge/media/values.yaml` | UID/GID owning those directories (`id tloi`) |
+| `online-judge/cloudflared/config.yaml` | tunnel UUID from `cloudflared tunnel create tloj-dev` |
+| `online-judge/{django,wsevent,judge}/values.yaml` | `image.tag`, set by the first CI deploy |
 
 ## Rules
 

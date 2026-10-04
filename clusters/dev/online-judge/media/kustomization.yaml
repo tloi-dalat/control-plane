@@ -6,9 +6,10 @@ helmCharts:
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
     version: 0.1.0
-    namespace: oj
-    releaseName: oj-judge
+    namespace: online-judge
+    releaseName: online-judge-media
     valuesFile: values.yaml
+# Hash-suffixed name: editing nginx.conf changes the pod spec, so it rolls.
 configMapGenerator:
-  - name: oj-judge-config
-    files: [judge.yml]
+  - name: online-judge-media-nginx
+    files: [default.conf=nginx.conf]
