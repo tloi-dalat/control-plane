@@ -138,7 +138,7 @@ cloudflared tunnel route dns tloj-dev oj-dev-k8s.tloi.vn   # TEST hostname only,
 Put the UUID into `clusters/dev/online-judge/cloudflared/config.yaml`. Then seal, on the VPS:
 
 ```bash
-curl -sSL https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.40.0/kubeseal-0.40.0-linux-amd64.tar.gz \
+curl -sSL https://github.com/bitnami/sealed-secrets/releases/download/v0.40.0/kubeseal-0.40.0-linux-amd64.tar.gz \
   | tar xz kubeseal && sudo install kubeseal /usr/local/bin/ && rm kubeseal
 bootstrap/seal-secrets.sh dev ~/.cloudflared/<UUID>.json
 ```

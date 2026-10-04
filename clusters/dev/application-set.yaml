@@ -12,7 +12,7 @@ spec:
   goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: https://github.com/tloi-dalat/control-plane.git
+        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/dev/argocd/repo-credentials.example.yaml)
         revision: main
         directories:
           - path: clusters/dev/*/*
@@ -28,7 +28,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/tloi-dalat/control-plane.git
+        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/dev/argocd/repo-credentials.example.yaml)
         targetRevision: main
         path: '{{ .path.path }}'
       destination:
