@@ -10,7 +10,7 @@ kind: StatefulSet            # stable identities: oj-judge-0, oj-judge-1, …
 replicaCount: 1              # each pod needs its name registered in the site admin
 image:
   repository: ghcr.io/tloi-dalat/oj-judge
-  tag: main-0000000          # CHANGEME: replaced by the first CI deploy
+  tag: main-3afb3c1
 args: ["run", "-c", "/config/judge.yml", "oj-bridge", "$(JUDGE__NAME)", "$(JUDGE__KEY)"]
 env:
   # The image already contains an installed judge; skip the entrypoint's
