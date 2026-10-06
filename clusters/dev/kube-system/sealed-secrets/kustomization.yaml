@@ -11,6 +11,9 @@ helmCharts:
     version: 2.20.0
     namespace: kube-system
     releaseName: sealed-secrets-controller
+    # The SealedSecret CRD lives in the chart's crds/ folder, which kustomize
+    # drops unless asked. Without it every SealedSecret fails to apply.
+    includeCRDs: true
     valuesInline:
       # kubeseal's defaults: --controller-name sealed-secrets-controller
       #                      --controller-namespace kube-system
