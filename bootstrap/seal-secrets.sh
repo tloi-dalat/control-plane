@@ -57,7 +57,6 @@ printf '%s\n' \
   "DJANGO__SECRET_KEY=$(rand 64)" \
   "MYSQL__PASSWORD=${mysql_pw}" \
   "REDIS__PASSWORD=$(rand 32)" \
-  "EVENT__KEY=$(rand 32)" \
   "EVENT__SUBMISSION_KEY=$(rand 64)" \
   "EVENT__CONTEST_KEY=$(rand 64)" \
   "EVENT__TICKET_KEY=$(rand 64)" \
