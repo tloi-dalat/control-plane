@@ -46,7 +46,7 @@ free -h          # expect ~8 GB
 
 ## 2. MySQL: reachable from pods, nowhere else
 
-Pods reach the host at `10.42.0.1` (see `clusters/dev/online-judge/mysql/mysql.yaml`), so MySQL must listen
+Pods reach the host at `10.42.0.1` (MYSQL__HOST in `clusters/dev/online-judge/django/values.yaml`), so MySQL must listen
 beyond loopback, and the firewall must allow **only** the pod network.
 
 ```bash

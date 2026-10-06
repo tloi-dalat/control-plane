@@ -14,7 +14,10 @@ env:
   SITE__DOMAIN: oj-k8s.tloi.shop
   SITE__NAME: TLOJ
   DJANGO__DEBUG: "false"
-  MYSQL__HOST: mysql            # Service → host MySQL (see ../mysql)
+  # MariaDB runs on the VPS host. 10.42.0.1 is the host as seen from its pods
+  # (k3s bridge on the only node). Not a selector-less Service: ArgoCD 3.x
+  # excludes EndpointSlice/Endpoints by default, so the Service had no backend.
+  MYSQL__HOST: "10.42.0.1"
   MYSQL__PORT: "3306"
   MYSQL__DATABASE: dmoj
   MYSQL__USER: dmoj_k8s
