@@ -14,8 +14,7 @@ env:
   SITE__DOMAIN: oj-k8s.tloi.shop
   SITE__NAME: TLOJ
   DJANGO__DEBUG: "false"
-  # Dev is invite-only: no sign-up form, and Google sign-in only for existing
-  # accounts (dmoj/registration_gate.py in the site repo).
+  # Dev is invite-only: no sign-up form.
   DJANGO__REGISTRATION_OPEN: "false"
   # MariaDB runs on the VPS host. 10.42.0.1 is the host as seen from its pods
   # (k3s bridge on the only node). Not a selector-less Service: ArgoCD 3.x
