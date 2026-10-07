@@ -1,0 +1,13 @@
+# Machine identity "tloj-development" (Infisical → Organization → Access
+# Control → Identities), Universal Auth, Viewer on the TLOJ project.
+apiVersion: secrets.infisical.com/v1beta1
+kind: InfisicalAuth
+metadata:
+  name: tloj
+  namespace: infisical
+spec:
+  infisicalConnectionRef: { name: infisical-cloud, namespace: infisical }
+  method: universal
+  universal:
+    clientIdRef: { name: infisical-universal-auth, namespace: infisical, key: clientId }
+    clientSecretRef: { name: infisical-universal-auth, namespace: infisical, key: clientSecret }

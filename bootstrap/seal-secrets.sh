@@ -1,25 +1,29 @@
 #!/usr/bin/env bash
-# Create the SealedSecrets for one environment of the `online-judge` namespace.
+# Seal the two credentials that can't live in Infisical. Everything else (DB
+# password, Django key, judge key, …) is typed in the Infisical web UI and
+# synced by the operator — see clusters/<env>/online-judge/secrets/.
 #
-#   bootstrap/seal-secrets.sh <env> [cloudflared-credentials.json]
+#   bootstrap/seal-secrets.sh <env> infisical                 # machine identity login (prompted)
+#   bootstrap/seal-secrets.sh <env> cloudflared <UUID>.json   # Cloudflare Tunnel credentials
+#
+#   <env> is a directory under clusters/: development, production.
 #
 # Plaintext never touches disk and never appears in a process list: values are
-# generated or prompted for, fed to kubectl through a file descriptor, and only
-# kubeseal's encrypted output is written to clusters/<env>/online-judge/secrets/.
+# prompted for or read from the given file, piped to kubectl, and only
+# kubeseal's encrypted output is written into clusters/<env>/.
 #
 # Needs: kubectl (pointing at the cluster) and kubeseal — or set
 # SEALED_SECRETS_CERT to the controller's public cert (kubeseal --fetch-cert)
 # to seal offline.
 set -euo pipefail
 
-ENVIRONMENT=${1:?usage: seal-secrets.sh <env> [cloudflared-credentials.json]}
-CREDS_JSON=${2:-}
-NS=online-judge
-OUT="clusters/${ENVIRONMENT}/${NS}/secrets"
+usage() { sed -n '6,7p' "$0" | sed 's/^# *//' >&2; exit 1; }
+ENVIRONMENT=${1:-}; WHAT=${2:-}
+[[ -n "$ENVIRONMENT" && -n "$WHAT" ]] || usage
 
 cd "$(dirname "$0")/.."
-[[ -d "$OUT" ]] || { echo "no such directory: $OUT" >&2; exit 1; }
-for bin in kubectl kubeseal openssl; do
+[[ -d "clusters/${ENVIRONMENT}" ]] || { echo "no such environment: clusters/${ENVIRONMENT}" >&2; exit 1; }
+for bin in kubectl kubeseal; do
   command -v "$bin" >/dev/null || { echo "missing: $bin" >&2; exit 1; }
 done
 
@@ -30,66 +34,30 @@ else
   kubeseal_args+=(--controller-namespace kube-system --controller-name sealed-secrets-controller)
 fi
 
-# Re-sealing rotates every generated key: all sessions are logged out and the
-# judge key must be re-entered in the admin. Make that a deliberate choice.
-if [[ -e "${OUT}/online-judge-secrets.yaml" && "${FORCE:-}" != 1 ]]; then
-  echo "${OUT}/online-judge-secrets.yaml exists. Re-run with FORCE=1 to rotate everything." >&2
-  exit 1
-fi
-
-# No `head` here: with pipefail, an early-closing reader can turn SIGPIPE into a failure.
-rand() { local s; s=$(openssl rand -base64 96 | tr -dc 'A-Za-z0-9'); printf '%s' "${s:0:$1}"; }
 ask() { local v; read -r -s -p "$1: " v; echo >&2; printf '%s' "$v"; }
 
-# seal NAME  (KEY=VALUE lines on stdin)
-seal() {
-  kubectl create secret generic "$1" -n "$NS" --dry-run=client -o yaml --from-env-file=/dev/stdin \
-    | kubeseal "${kubeseal_args[@]}" > "${OUT}/$1.yaml"
-  echo "wrote ${OUT}/$1.yaml" >&2
-}
+case "$WHAT" in
+  infisical)
+    # Infisical → Organization → Access Control → Identities → <identity> →
+    # Universal Auth: the Client ID, and a Client Secret created there.
+    out="clusters/${ENVIRONMENT}/infisical/auth/infisical-universal-auth.yaml"
+    client_id=$(ask "Infisical machine identity Client ID")
+    client_secret=$(ask "Infisical machine identity Client Secret")
+    [[ -n "$client_id" && -n "$client_secret" ]] || { echo "both are required" >&2; exit 1; }
+    printf 'clientId=%s\nclientSecret=%s\n' "$client_id" "$client_secret" \
+      | kubectl create secret generic infisical-universal-auth -n infisical \
+          --dry-run=client -o yaml --from-env-file=/dev/stdin \
+      | kubeseal "${kubeseal_args[@]}" > "$out"
+    ;;
+  cloudflared)
+    # From `cloudflared tunnel create <name>`: ~/.cloudflared/<UUID>.json
+    creds=${3:?usage: seal-secrets.sh <env> cloudflared <UUID>.json}
+    out="clusters/${ENVIRONMENT}/online-judge/secrets/cloudflared-credentials.yaml"
+    kubectl create secret generic cloudflared-credentials -n online-judge \
+        --dry-run=client -o yaml --from-file=credentials.json="$creds" \
+      | kubeseal "${kubeseal_args[@]}" > "$out"
+    ;;
+  *) usage ;;
+esac
 
-mysql_pw=$(ask "MySQL password for dmoj_k8s (as set in bootstrap/dev/mysql-k8s-user.sql)")
-[[ -n "$mysql_pw" ]] || { echo "MySQL password is required" >&2; exit 1; }
-google_secret=$(ask "Google OAuth client secret — the ROTATED one (empty to skip Google login)")
-judge_key=$(rand 48)
-
-printf '%s\n' \
-  "DJANGO__SECRET_KEY=$(rand 64)" \
-  "MYSQL__PASSWORD=${mysql_pw}" \
-  "REDIS__PASSWORD=$(rand 32)" \
-  "EVENT__SUBMISSION_KEY=$(rand 64)" \
-  "EVENT__CONTEST_KEY=$(rand 64)" \
-  "EVENT__TICKET_KEY=$(rand 64)" \
-  "SOCIAL__GOOGLE_SECRET=${google_secret}" \
-  | seal online-judge-secrets
-
-# The judge gets its own Secret holding ONLY its key: it runs untrusted code.
-printf '%s\n' "JUDGE__KEY=${judge_key}" | seal online-judge-judge-secrets
-
-if [[ -n "$CREDS_JSON" ]]; then
-  kubectl create secret generic cloudflared-credentials -n "$NS" --dry-run=client -o yaml \
-      --from-file=credentials.json="$CREDS_JSON" \
-    | kubeseal "${kubeseal_args[@]}" > "${OUT}/cloudflared-credentials.yaml"
-  echo "wrote ${OUT}/cloudflared-credentials.yaml" >&2
-fi
-
-{
-  echo "# Generated by bootstrap/seal-secrets.sh. Encrypted files only — safe to commit."
-  echo "apiVersion: kustomize.config.k8s.io/v1beta1"
-  echo "kind: Kustomization"
-  echo "resources:"
-  for f in "${OUT}"/*.yaml; do
-    b=$(basename "$f")
-    [[ "$b" == kustomization.yaml ]] || echo "  - ${b}"
-  done
-} > "${OUT}/kustomization.yaml"
-
-cat >&2 <<MSG
-
-Done. Commit ${OUT}/ and push.
-
-Register the judge in the ${ENVIRONMENT} site admin (Admin → Judges → Add judge):
-  name: online-judge-judge-0
-  key:  ${judge_key}
-This is the only time the key is shown in plain text.
-MSG
+echo "wrote ${out} (encrypted, safe to commit)" >&2

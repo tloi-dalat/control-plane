@@ -19,7 +19,7 @@ env:
   JUDGE__NAME:
     valueFrom: { fieldRef: { fieldPath: metadata.name } }
   JUDGE__KEY:
-    valueFrom: { secretKeyRef: { name: online-judge-judge-secrets, key: JUDGE__KEY } }
+    valueFrom: { secretKeyRef: { name: online-judge-judge-env, key: JUDGE__KEY } }
 # Starts as root on purpose: the entrypoint drops to the `judge` user itself
 # (setpriv). cptbox needs ptrace; it installs its own seccomp filter per
 # sandboxed process, which the runtime's default profile would block.

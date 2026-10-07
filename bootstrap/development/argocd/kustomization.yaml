@@ -1,6 +1,6 @@
 # ArgoCD, pinned. Apply with server-side apply (the CRDs are too large for
 # client-side apply):
-#   kubectl apply --server-side --force-conflicts -k bootstrap/dev/argocd
+#   kubectl apply --server-side --force-conflicts -k bootstrap/development/argocd
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: argocd

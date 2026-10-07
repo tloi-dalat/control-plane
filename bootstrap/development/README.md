@@ -33,8 +33,8 @@ cloudflared `2026.9.3`.
    id tloi                                    # → runAsUser / runAsGroup
    grep -n "MEDIA_ROOT\|PROBLEM_DATA_ROOT" /home/tloi/site/dmoj/local_settings.py
    ```
-   Put the paths in `clusters/dev/online-judge/storage/{media,problems}.yaml` and the IDs in
-   `clusters/dev/online-judge/django/values.yaml` and `clusters/dev/online-judge/media/values.yaml`. Commit.
+   Put the paths in `clusters/development/online-judge/storage/{media,problems}.yaml` and the IDs in
+   `clusters/development/online-judge/core/values.yaml` and `clusters/development/online-judge/media/values.yaml`. Commit.
 
 ## 1. Prepare the VPS
 
@@ -46,7 +46,7 @@ free -h          # expect ~8 GB
 
 ## 2. MySQL: reachable from pods, nowhere else
 
-Pods reach the host at `10.42.0.1` (MYSQL__HOST in `clusters/dev/online-judge/django/values.yaml`), so MySQL must listen
+Pods reach the host at `10.42.0.1` (MYSQL__HOST in `clusters/development/online-judge/core/values.yaml`), so MySQL must listen
 beyond loopback, and the firewall must allow **only** the pod network.
 
 ```bash
@@ -63,7 +63,7 @@ sudo ufw deny 3306/tcp
 sudo ufw enable
 
 # Dedicated user for pods: edit the password in the file, run it, then remove it from the file.
-sudo mysql < bootstrap/dev/mysql-k8s-user.sql
+sudo mysql < bootstrap/development/mysql-k8s-user.sql
 ```
 
 **Check:** `sudo ss -ltnp | grep 3306` shows `0.0.0.0:3306`. From **your laptop**,
@@ -73,7 +73,7 @@ sudo mysql < bootstrap/dev/mysql-k8s-user.sql
 
 ```bash
 sudo mkdir -p /etc/rancher/k3s
-sudo cp bootstrap/dev/k3s-config.yaml /etc/rancher/k3s/config.yaml
+sudo cp bootstrap/development/k3s-config.yaml /etc/rancher/k3s/config.yaml
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='v1.36.5+k3s1' sh -
 mkdir -p ~/.kube && sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config \
   && sudo chown "$USER" ~/.kube/config && chmod 600 ~/.kube/config
@@ -89,7 +89,7 @@ kubectl run dbcheck --rm -it --restart=Never --image=mysql:8.0 -- \
 ## 4. ArgoCD
 
 ```bash
-kubectl apply --server-side --force-conflicts -k bootstrap/dev/argocd
+kubectl apply --server-side --force-conflicts -k bootstrap/development/argocd
 kubectl -n argocd rollout status deploy/argocd-repo-server
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
 ```
@@ -98,19 +98,19 @@ The UI is **never exposed publicly**. Reach it through SSH:
 `ssh -L 8080:localhost:8080 <vps>`, then on the VPS `kubectl -n argocd port-forward svc/argocd-server 8080:443`,
 then open https://localhost:8080 (user `admin`). Change the password, then delete `argocd-initial-admin-secret`.
 
-If this repo is private, add read access now: follow `bootstrap/dev/argocd/repo-credentials.example.yaml`.
+If this repo is private, add read access now: follow `bootstrap/development/argocd/repo-credentials.example.yaml`.
 
 **Check:** `kubectl -n argocd get cm argocd-cm -o yaml | grep enable-helm`.
 
 ## 5. Hand the cluster to git
 
 ```bash
-kubectl apply -f clusters/dev/application-set.yaml
+kubectl apply -f clusters/development/application-set.yaml
 kubectl -n argocd get applications -w
 ```
 
-`kube-system-sealed-secrets` goes Healthy first. The `online-judge-*` apps keep retrying until secrets exist
-(step 7). That's expected.
+`kube-system-sealed-secrets` and `infisical-operator` go Healthy first. `infisical-auth` and the
+`online-judge-*` apps keep retrying until the secrets exist (step 7). That's expected.
 
 ## 6. Back up the sealed-secrets key: do not skip
 
@@ -135,20 +135,33 @@ cloudflared tunnel create tloj-dev                    # prints the UUID, writes 
 cloudflared tunnel route dns tloj-dev oj-dev-k8s.tloi.vn   # TEST hostname only, for now
 ```
 
-Put the UUID into `clusters/dev/online-judge/cloudflared/config.yaml`. Then seal, on the VPS:
+Put the UUID into `clusters/development/online-judge/cloudflared/config.yaml`.
+
+**App secrets live in Infisical** (https://app.infisical.com, free plan):
+
+1. Create a project `TLOJ`. Project Settings → Environments: set the slugs to `development` and
+   `production` (delete `staging`). Copy the **project slug** into `projectSlug:` in
+   `clusters/development/online-judge/secrets/online-judge-core-env.yaml` and `online-judge-judge-env.yaml`.
+2. In environment `development`, create folder `/online-judge` with two subfolders, `core` and `judge`.
+   `bootstrap/new-app-secrets.sh` prints fresh values: import the first block into `/online-judge/core`
+   (fill in `MYSQL__PASSWORD` from step 2 and the **rotated** Google secret), and `JUDGE__KEY` into
+   `/online-judge/judge`.
+3. Organization → Access Control → Identities → create `tloj-development` (org role: No Access).
+   Its Universal Auth → create a Client Secret. In the project → Access Control → Machine Identities →
+   add it as **Viewer**.
+
+Then seal the two credentials that can't live in Infisical, on the VPS:
 
 ```bash
 curl -sSL https://github.com/bitnami/sealed-secrets/releases/download/v0.40.0/kubeseal-0.40.0-linux-amd64.tar.gz \
   | tar xz kubeseal && sudo install kubeseal /usr/local/bin/ && rm kubeseal
-bootstrap/seal-secrets.sh dev ~/.cloudflared/<UUID>.json
+bootstrap/seal-secrets.sh development infisical                          # prompts for Client ID + Secret
+bootstrap/seal-secrets.sh development cloudflared ~/.cloudflared/<UUID>.json
 ```
 
-It prompts for the MySQL password (step 2) and the **rotated** Google secret, generates every other
-key, and prints the judge key **once**. Then:
-
-- In the dev site admin → **Judges → Add judge**: name `online-judge-judge-0`, key as printed. (A new identity, so
-  the old Docker judge keeps its own during side-by-side.)
-- Commit `clusters/dev/online-judge/secrets/` and `cloudflared/config.yaml`, then push.
+- In the dev site admin → **Judges → Add judge**: name `online-judge-judge-0`, key = `JUDGE__KEY` from
+  Infisical.
+- Commit `clusters/development/infisical/auth/`, `online-judge/secrets/` and `cloudflared/config.yaml`, then push.
 - Keep the tunnel credentials JSON in your password manager, and delete other copies.
 
 **Check:** `kubectl -n argocd get applications` shows everything **Synced / Healthy**.
@@ -178,8 +191,8 @@ The old stack still serves `oj-dev.tloi.vn`, untouched.
 
 ## 9. Cut over
 
-1. PR: in `clusters/dev/online-judge/django/values.yaml` set `SITE__DOMAIN: oj-dev.tloi.vn`. Merge, and wait
-   for `online-judge-django` to be Synced.
+1. PR: in `clusters/development/online-judge/core/values.yaml` set `SITE__DOMAIN: oj-dev.tloi.vn`. Merge, and wait
+   for `online-judge-core` to be Synced.
 2. Move the hostname to the new tunnel:
    ```bash
    cloudflared tunnel route dns --overwrite-dns tloj-dev oj-dev.tloi.vn
@@ -195,7 +208,7 @@ against the same database, which is safe because they run the same commit.
 ## 10. Daily backups
 
 Install the backup job from the design doc §11.4 (systemd timer, `mysqldump` and `restic` off-site),
-pointed at the paths in `clusters/dev/online-judge/storage/`. Then **restore once**, deliberately, to prove it works.
+pointed at the paths in `clusters/development/online-judge/storage/`. Then **restore once**, deliberately, to prove it works.
 
 ## 11. After a quiet week: remove the old stack
 
@@ -209,5 +222,5 @@ pointed at the paths in `clusters/dev/online-judge/storage/`. Then **restore onc
 ## Disaster recovery (dev VPS lost)
 
 New VPS → restore MySQL and the media/problem directories from restic → steps 1–4 →
-**restore the sealed-secrets key (step 6)** → step 5. ArgoCD redeploys everything from git, and no secret
-needs re-entering.
+**restore the sealed-secrets key (step 6)** → step 5. ArgoCD redeploys everything from git, and the app
+secrets come back from Infisical: nothing needs re-entering.

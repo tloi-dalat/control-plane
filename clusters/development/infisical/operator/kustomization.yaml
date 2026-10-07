@@ -1,0 +1,20 @@
+# Infisical Secrets Operator: turns InfisicalStaticSecret resources into plain
+# Kubernetes Secrets, with values read from Infisical Cloud (app.infisical.com).
+# Secret values are typed in the Infisical web UI, never committed here.
+#
+# Cluster-wide: it serves every namespace. Its login lives in ../auth.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmCharts:
+  - repo: https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts/
+    name: secrets-operator
+    version: v0.11.9   # chart and operator image share a version (github.com/Infisical/kubernetes-operator releases)
+    namespace: infisical
+    releaseName: infisical-operator
+    valuesInline:
+      installCRDs: true   # InfisicalConnection, InfisicalAuth, InfisicalStaticSecret, … (rendered as templates)
+      controllerManager:
+        manager:
+          resources:
+            requests: { cpu: 10m, memory: 64Mi }
+            limits: { memory: 128Mi }

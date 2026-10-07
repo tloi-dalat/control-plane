@@ -1,7 +1,7 @@
-# Decrypts the SealedSecrets committed under clusters/dev/*/secrets.
+# Decrypts the SealedSecrets committed under clusters/development/*/secrets.
 #
 # ITS PRIVATE KEY IS THE ONE THING IN THIS CLUSTER YOU CANNOT RECREATE.
-# Back it up off the VPS right after first install (bootstrap/dev/README.md,
+# Back it up off the VPS right after first install (bootstrap/development/README.md,
 # step 6). A rebuilt cluster with a new key can't read any committed secret.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
