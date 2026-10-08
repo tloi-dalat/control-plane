@@ -14,6 +14,8 @@ env:
   SITE__DOMAIN: oj-k8s.tloi.shop
   SITE__NAME: TLOJ
   DJANGO__DEBUG: "false"
+  # Dev is invite-only: no sign-up form.
+  DJANGO__REGISTRATION_OPEN: "false"
   # MariaDB runs on the VPS host. 10.42.0.1 is the host as seen from its pods
   # (k3s bridge on the only node). Not a selector-less Service: ArgoCD 3.x
   # excludes EndpointSlice/Endpoints by default, so the Service had no backend.
@@ -28,10 +30,6 @@ env:
   MEDIA__ROOT: /media
   BRIDGE__CONNECT_HOST: online-judge-bridge
   EVENT__POST: ws://online-judge-wsevent:15101/
-  # VNOJ's websocket/daemon.js has no `auth` command: with a key set, the site
-  # sends one, gets "bad-command" and every page 500s. An explicit empty value
-  # here overrides the sealed EVENT__KEY, and the settings read "" as unset.
-  EVENT__KEY: ""
   # No MTA in the cluster: dev prints mail to the pod log.
   MAIL__BACKEND: django.core.mail.backends.console.EmailBackend
   MAIL__ADMINS: kitsune:minhquandinhcao@gmail.com
