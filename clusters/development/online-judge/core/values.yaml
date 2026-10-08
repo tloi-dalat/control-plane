@@ -11,7 +11,7 @@ env:
   ENV: dev
   # Test hostname during side-by-side; switch to oj-dev.tloi.vn at cutover
   # (dev plan §8). Everything URL-shaped derives from this one value.
-  SITE__DOMAIN: oj-k8s.tloi.shop
+  SITE__DOMAIN: oj.tloi.shop
   SITE__NAME: TLOJ
   DJANGO__DEBUG: "false"
   # Dev is invite-only: no sign-up form.
