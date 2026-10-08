@@ -11,7 +11,7 @@ args: ["--requirepass", "$(REDIS__PASSWORD)", "--save", "", "--appendonly", "no"
        "--maxmemory", "256mb", "--maxmemory-policy", "volatile-lru"]
 env:
   REDIS__PASSWORD:
-    valueFrom: { secretKeyRef: { name: online-judge-secrets, key: REDIS__PASSWORD } }
+    valueFrom: { secretKeyRef: { name: online-judge-core-env, key: REDIS__PASSWORD } }
 ports:
   - { name: redis, containerPort: 6379 }
 probes:

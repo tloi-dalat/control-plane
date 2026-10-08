@@ -1,0 +1,12 @@
+# How the operator logs in to Infisical Cloud. Every InfisicalStaticSecret in
+# the cluster points at the InfisicalAuth here (infisicalAuthRef).
+#
+# infisical-universal-auth.yaml holds the machine identity's client ID/secret,
+# sealed by `bootstrap/seal-secrets.sh development infisical`. It is the one
+# credential that cannot itself live in Infisical.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - connection.yaml
+  - auth.yaml
+  - infisical-universal-auth.yaml

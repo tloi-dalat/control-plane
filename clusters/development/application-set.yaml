@@ -1,21 +1,21 @@
-# One ArgoCD Application per directory clusters/dev/<namespace>/<app>:
-#   clusters/dev/online-judge/django   → Application "online-judge-django", namespace online-judge
-#   clusters/dev/quiz/web    → Application "quiz-web",  namespace quiz   (later: just add the directory)
+# One ArgoCD Application per directory clusters/development/<namespace>/<app>:
+#   clusters/development/online-judge/core     → Application "online-judge-core", namespace online-judge
+#   clusters/development/quiz/web    → Application "quiz-web",  namespace quiz   (later: just add the directory)
 # Applied once by hand at bootstrap; everything after is a git commit.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: dev
+  name: development
   namespace: argocd
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/dev/argocd/repo-credentials.example.yaml)
+        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/development/argocd/repo-credentials.example.yaml)
         revision: main
         directories:
-          - path: clusters/dev/*/*
+          - path: clusters/development/*/*
   syncPolicy:
     # Deleting this ApplicationSet must never take the workloads (or volumes)
     # down with it.
@@ -28,7 +28,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/dev/argocd/repo-credentials.example.yaml)
+        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/development/argocd/repo-credentials.example.yaml)
         targetRevision: main
         path: '{{ .path.path }}'
       destination:

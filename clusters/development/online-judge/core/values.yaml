@@ -2,7 +2,7 @@
 # celery.yaml — lists there REPLACE the lists here, maps merge).
 #
 # CI bumps image.tag in THIS file: one tag moves all three roles together.
-# Non-secret settings only. Secrets come from the online-judge-secrets SealedSecret.
+# Non-secret settings only. Secrets come from Infisical (Secret online-judge-core-env).
 image:
   repository: ghcr.io/tloi-dalat/oj-site
   tag: main-1dc0920
@@ -34,12 +34,12 @@ env:
   MAIL__BACKEND: django.core.mail.backends.console.EmailBackend
   MAIL__ADMINS: kitsune:minhquandinhcao@gmail.com
   # OAuth client ID is public (it appears in every login redirect).
-  # The client SECRET lives in online-judge-secrets.
+  # The client SECRET lives in Infisical (online-judge-core-env).
   SOCIAL__GOOGLE_KEY: 15854195969-1d595g1fuu6fu6qabi0ht7952sm01tq4.apps.googleusercontent.com
   LOG__LEVEL: INFO
 
 envFrom:
-  - secretRef: { name: online-judge-secrets }
+  - secretRef: { name: online-judge-core-env }   # synced from Infisical, see ../secrets/online-judge-core-env.yaml
 
 podSecurityContext:
   # Must match the owner of the existing media and problem directories on the

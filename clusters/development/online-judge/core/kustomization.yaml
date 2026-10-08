@@ -1,4 +1,5 @@
-# The three Django processes: one image, one shared values.yaml, one ArgoCD app.
+# The online judge itself: site (web), bridge (judges ↔ site) and celery
+# (background tasks). One image, one shared values.yaml, one ArgoCD app.
 # Sharing an app means the migrate PreSync hook (site.yaml) runs before ANY of
 # site, bridge or celery is updated, so none of them meets a schema it doesn't
 # expect.
@@ -28,3 +29,14 @@ helmCharts:
     releaseName: online-judge-celery
     valuesFile: values.yaml
     additionalValuesFiles: [celery.yaml]
+# Restart the pods when Infisical changes a secret they read (the operator
+# watches workloads carrying this annotation).
+patches:
+  - target: { group: apps, kind: Deployment|StatefulSet }
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment   # ignored: `target` picks the resources
+      metadata:
+        name: any
+        annotations:
+          secrets.infisical.com/auto-reload: "true"
