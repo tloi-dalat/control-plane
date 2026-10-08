@@ -4,7 +4,7 @@
 # CI bumps image.tag in THIS file: one tag moves all three roles together.
 # Non-secret settings only. Secrets come from Infisical (Secret online-judge-core-env).
 image:
-  repository: ghcr.io/tloi-dalat/oj-site
+  repository: ghcr.io/tloi-dalat/oj-core
   tag: main-1dc0920
 
 env:
