@@ -22,7 +22,7 @@ cloudflared `2026.9.3`.
 2. **Secrets for CI**: create `CONTROL_PLANE_TOKEN` (fine-grained PAT, *Contents: read & write* on
    `control-plane` only) as an org secret, or in both `TLOJ` and `judge-server`.
 3. **Merge the `feat/k8s-dev` branches** in `TLOJ` and `judge-server`. Their first `main` builds push
-   `oj-site`, `oj-wsevent` and `oj-judge` to GHCR, then commit tag bumps here, replacing `main-0000000`.
+   `oj-core`, `oj-wsevent` and `oj-judge` to GHCR, then commit tag bumps here, replacing `main-0000000`.
    Set the three packages **public** (or add an image pull secret).
    *Check:* `git log` here shows `[BOT] dev/online-judge: …` commits; `grep -rn main-0000000 clusters/` is empty.
 4. **Rotate the Google OAuth client secret** (the old one appeared in a chat transcript). Add both
