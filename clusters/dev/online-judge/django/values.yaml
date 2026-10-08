@@ -5,7 +5,7 @@
 # Non-secret settings only. Secrets come from the online-judge-secrets SealedSecret.
 image:
   repository: ghcr.io/tloi-dalat/oj-site
-  tag: main-6cfd4a6
+  tag: main-1dc0920
 
 env:
   ENV: dev
