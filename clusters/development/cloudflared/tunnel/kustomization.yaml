@@ -1,17 +1,22 @@
+# The cluster's one way in, shared by every namespace: an outbound Cloudflare
+# Tunnel. Each service adds its hostnames to config.yaml.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+resources:
+  # Sealed by `bootstrap/seal-secrets.sh development cloudflared <UUID>.json`.
+  - cloudflared-credentials.yaml
 helmGlobals:
   chartHome: /tmp/charts
 helmCharts:
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
     version: 0.1.0
-    namespace: online-judge
-    releaseName: online-judge-cloudflared
+    namespace: cloudflared
+    releaseName: cloudflared-tunnel
     valuesFile: values.yaml
 # Routing lives here, in git: a route change is a reviewed PR. The hash suffix
 # makes an edit roll the pods. (Cloudflare drops open websockets when the
 # config reloads — browsers reconnect — but avoid changes during a contest.)
 configMapGenerator:
-  - name: online-judge-cloudflared-config
+  - name: cloudflared-tunnel-config
     files: [config.yaml]

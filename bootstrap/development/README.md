@@ -135,7 +135,7 @@ cloudflared tunnel create tloj-dev                    # prints the UUID, writes 
 cloudflared tunnel route dns tloj-dev oj-dev-k8s.tloi.vn   # TEST hostname only, for now
 ```
 
-Put the UUID into `clusters/development/online-judge/cloudflared/config.yaml`.
+Put the UUID into `clusters/development/cloudflared/tunnel/config.yaml`, and the test hostname into its `hostname:` lines.
 
 **App secrets live in Infisical** (https://app.infisical.com, free plan):
 
@@ -161,7 +161,7 @@ bootstrap/seal-secrets.sh development cloudflared ~/.cloudflared/<UUID>.json
 
 - In the dev site admin → **Judges → Add judge**: name `online-judge-judge-0`, key = `JUDGE__KEY` from
   Infisical.
-- Commit `clusters/development/infisical/auth/`, `online-judge/secrets/` and `cloudflared/config.yaml`, then push.
+- Commit `clusters/development/infisical/auth/`, `online-judge/secrets/` and `cloudflared/tunnel/`, then push.
 - Keep the tunnel credentials JSON in your password manager, and delete other copies.
 
 **Check:** `kubectl -n argocd get applications` shows everything **Synced / Healthy**.
@@ -191,7 +191,8 @@ The old stack still serves `oj-dev.tloi.vn`, untouched.
 
 ## 9. Cut over
 
-1. PR: in `clusters/development/online-judge/core/values.yaml` set `SITE__DOMAIN: oj-dev.tloi.vn`. Merge, and wait
+1. PR: in `clusters/development/online-judge/core/values.yaml` set `SITE__DOMAIN: oj-dev.tloi.vn`, and in
+   `clusters/development/cloudflared/tunnel/config.yaml` change the `oj-k8s.tloi.shop` hostnames to it. Merge, and wait
    for `online-judge-core` to be Synced.
 2. Move the hostname to the new tunnel:
    ```bash

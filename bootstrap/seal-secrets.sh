@@ -52,8 +52,8 @@ case "$WHAT" in
   cloudflared)
     # From `cloudflared tunnel create <name>`: ~/.cloudflared/<UUID>.json
     creds=${3:?usage: seal-secrets.sh <env> cloudflared <UUID>.json}
-    out="clusters/${ENVIRONMENT}/online-judge/secrets/cloudflared-credentials.yaml"
-    kubectl create secret generic cloudflared-credentials -n online-judge \
+    out="clusters/${ENVIRONMENT}/cloudflared/tunnel/cloudflared-credentials.yaml"
+    kubectl create secret generic cloudflared-credentials -n cloudflared \
         --dry-run=client -o yaml --from-file=credentials.json="$creds" \
       | kubeseal "${kubeseal_args[@]}" > "$out"
     ;;

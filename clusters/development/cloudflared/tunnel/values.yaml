@@ -1,5 +1,5 @@
-# The only way into the cluster: an outbound tunnel to Cloudflare.
-# Nothing on the VPS listens on a public port.
+# The only way into the cluster, for every namespace: an outbound tunnel to
+# Cloudflare. Nothing on the VPS listens on a public port.
 image:
   repository: cloudflare/cloudflared
   tag: 2026.9.3
@@ -14,7 +14,7 @@ probes:
 podSecurityContext: { runAsUser: 65532, runAsGroup: 65532, runAsNonRoot: true }   # image's nonroot user
 volumes:
   - name: config
-    configMap: { name: online-judge-cloudflared-config }
+    configMap: { name: cloudflared-tunnel-config }
   - name: creds
     secret: { secretName: cloudflared-credentials }
 volumeMounts:
