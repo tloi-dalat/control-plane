@@ -131,8 +131,8 @@ restart the controller.
 ```bash
 # cloudflared CLI on the VPS or your laptop:
 cloudflared tunnel login                              # once
-cloudflared tunnel create tloj-dev                    # prints the UUID, writes ~/.cloudflared/<UUID>.json
-cloudflared tunnel route dns tloj-dev oj-dev-k8s.tloi.vn   # TEST hostname only, for now
+cloudflared tunnel create control-plane-development                    # prints the UUID, writes ~/.cloudflared/<UUID>.json
+cloudflared tunnel route dns control-plane-development oj-dev-k8s.tloi.vn   # TEST hostname only, for now
 ```
 
 Put the UUID into `clusters/development/cloudflared/tunnel/config.yaml`, and the test hostname into its `hostname:` lines.
@@ -196,7 +196,7 @@ The old stack still serves `oj-dev.tloi.vn`, untouched.
    for `online-judge-core` to be Synced.
 2. Move the hostname to the new tunnel:
    ```bash
-   cloudflared tunnel route dns --overwrite-dns tloj-dev oj-dev.tloi.vn
+   cloudflared tunnel route dns --overwrite-dns control-plane-development oj-dev.tloi.vn
    ```
 3. Re-run the step 8 checklist on https://oj-dev.tloi.vn. Everyone is logged out once (new `SECRET_KEY`).
 

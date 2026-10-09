@@ -1,8 +1,8 @@
 # Locally-managed Cloudflare Tunnel. Created with:
-#   cloudflared tunnel create tloj-dev
+#   cloudflared tunnel create control-plane-development
 # which prints the UUID below and writes the credentials JSON that
 # bootstrap/seal-secrets.sh seals into the cloudflared-credentials Secret.
-tunnel: b7973f3b-4399-4fc9-a821-bf14f36212e8   # CHANGEME: tunnel UUID
+tunnel: 3a9981bf-783f-40f6-87d9-c5552c3c7bce
 credentials-file: /etc/cloudflared/creds/credentials.json
 metrics: 0.0.0.0:2000
 no-autoupdate: true
@@ -10,7 +10,7 @@ no-autoupdate: true
 # Rules match top to bottom; paths are Go regexes and are NOT stripped.
 # The tunnel lives in its own namespace and serves every service, so each rule
 # names its hostname and points at <service>.<namespace>.svc.cluster.local.
-# A new hostname also needs, once:  cloudflared tunnel route dns tloj-dev <hostname>
+# A new hostname also needs, once:  cloudflared tunnel route dns control-plane-development <hostname>
 ingress:
   # --- argocd -----------------------------------------------------------------
   # GitHub push webhook → ArgoCD, so a control-plane commit deploys in seconds
