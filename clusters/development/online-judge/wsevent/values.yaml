@@ -2,7 +2,7 @@
 # Exactly one replica: the message queue lives in memory.
 image:
   repository: ghcr.io/tloi-dalat/oj-wsevent
-  tag: main-968eb29
+  tag: main-701653f
 replicaCount: 1
 strategy: { type: Recreate }
 ports:
