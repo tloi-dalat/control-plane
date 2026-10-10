@@ -1,6 +1,4 @@
-# DMOJ judge configuration (no secrets here).
-# Runtime paths are detected at image build (/judge-runtime-paths.yml) and merged
-# in automatically because the image sets DMOJ_IN_DOCKER. The judge's identity
-# (name, key) comes from the command line — see values.yaml.
+judge_version: 2
 problem_storage_globs:
-  - /problems/*
+  - id: local
+    glob: /problems/*
