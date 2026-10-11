@@ -5,7 +5,7 @@
 # Non-secret settings only. Secrets come from Infisical (Secret online-judge-core-env).
 image:
   repository: ghcr.io/tloi-dalat/oj-core
-  tag: main-cc23a4d
+  tag: main-0a4d623
 
 env:
   ENV: dev
