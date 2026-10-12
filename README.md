@@ -20,7 +20,7 @@ clusters/
   development/                    ← dev VPS. Production (clusters/production/) is not here yet.
     application-set.yaml          ← one ArgoCD app per directory below (applied once at bootstrap)
     kube-system/sealed-secrets/   ← decrypts committed SealedSecrets (Infisical login, tunnel credentials)
-    cloudflared/tunnel/           ← the only way in, for every namespace: Cloudflare Tunnel, routes in config.yaml
+    cloudflared/tunnel/           ← the only way in, for every namespace: Cloudflare Tunnel connector (routes + DNS: terraform-cloudflare)
     infisical/                    ← namespace "infisical"
       operator/  Infisical Secrets Operator: Infisical Cloud → Kubernetes Secrets
       auth/      its login (machine identity, sealed) — shared by every namespace
@@ -52,7 +52,7 @@ ApplicationSet picks it up without any change.
 | Change a setting | Edit `env:` in the app's `values.yaml`. **Non-secret values only**, which CI enforces |
 | Change a secret | Edit it in Infisical (project TLOJ → environment → folder `/online-judge/core`, or `/online-judge/judge` for the judge key). The Secret updates within a minute and the pods restart themselves. No commit |
 | Add a secret | Add it in Infisical. `core/` (site, bridge, celery) gets every key in `/online-judge/core` via `envFrom`; other apps need a `secretKeyRef` to `online-judge-core-env` |
-| Change routing / add a hostname | `clusters/development/cloudflared/tunnel/config.yaml` (+ `cloudflared tunnel route dns control-plane-development <hostname>` once) |
+| Change routing / add a hostname | PR to `tloi-dalat/terraform-cloudflare`: `zero-trust/tunnel/tunnels/control-plane-development.yaml` |
 | Scale | `replicaCount` (site only; bridge, wsevent and redis must stay at 1) |
 
 Every app uses the shared chart `oci://ghcr.io/tloi-dalat/charts/app`, pinned in each
@@ -66,7 +66,6 @@ Every app uses the shared chart `oci://ghcr.io/tloi-dalat/charts/app`, pinned in
 |---|---|
 | `online-judge/storage/{media,problems}.yaml` | the existing media and problem-data directories on the dev VPS |
 | `online-judge/{core,media}/values.yaml` | UID/GID owning those directories (`id tloi`) |
-| `cloudflared/tunnel/config.yaml` | tunnel UUID from `cloudflared tunnel create control-plane-development` |
 | `online-judge/secrets/online-judge*-env.yaml` | the Infisical project slug (Project Settings) |
 | `online-judge/{core,wsevent,judge}/values.yaml` | `image.tag`, set by the first CI deploy |
 

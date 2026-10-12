@@ -128,14 +128,10 @@ restart the controller.
 
 ## 7. Tunnel and secrets
 
-```bash
-# cloudflared CLI on the VPS or your laptop:
-cloudflared tunnel login                              # once
-cloudflared tunnel create control-plane-development                    # prints the UUID, writes ~/.cloudflared/<UUID>.json
-cloudflared tunnel route dns control-plane-development oj-dev-k8s.tloi.vn   # TEST hostname only, for now
-```
-
-Put the UUID into `clusters/development/cloudflared/tunnel/config.yaml`, and the test hostname into its `hostname:` lines.
+**The tunnel lives in `tloi-dalat/terraform-cloudflare`.** Its `zero-trust/tunnel/tunnels/control-plane-development.yaml`
+lists the hostnames and routes; merging it creates the tunnel, the DNS records, and writes the tunnel
+token into Infisical (`development` → `/cloudflared`), where `cloudflared/tunnel/cloudflared-token.yaml`
+picks it up. No `cloudflared` CLI needed. See that repo's README for its one-time setup.
 
 **App secrets live in Infisical** (https://app.infisical.com, free plan):
 
@@ -150,19 +146,17 @@ Put the UUID into `clusters/development/cloudflared/tunnel/config.yaml`, and the
    Its Universal Auth → create a Client Secret. In the project → Access Control → Machine Identities →
    add it as **Viewer**.
 
-Then seal the two credentials that can't live in Infisical, on the VPS:
+Then seal the one credential that can't live in Infisical (its own login), on the VPS:
 
 ```bash
 curl -sSL https://github.com/bitnami/sealed-secrets/releases/download/v0.40.0/kubeseal-0.40.0-linux-amd64.tar.gz \
   | tar xz kubeseal && sudo install kubeseal /usr/local/bin/ && rm kubeseal
 bootstrap/seal-secrets.sh development infisical                          # prompts for Client ID + Secret
-bootstrap/seal-secrets.sh development cloudflared ~/.cloudflared/<UUID>.json
 ```
 
 - In the dev site admin → **Judges → Add judge**: name `online-judge-judge-0`, key = `JUDGE__KEY` from
   Infisical.
-- Commit `clusters/development/infisical/auth/`, `online-judge/secrets/` and `cloudflared/tunnel/`, then push.
-- Keep the tunnel credentials JSON in your password manager, and delete other copies.
+- Commit `clusters/development/infisical/auth/` and `online-judge/secrets/`, then push.
 
 **Check:** `kubectl -n argocd get applications` shows everything **Synced / Healthy**.
 `kubectl -n online-judge get pods`: all Running, `online-judge-site-migrate` Completed.
@@ -192,15 +186,13 @@ The old stack still serves `oj-dev.tloi.vn`, untouched.
 ## 9. Cut over
 
 1. PR: in `clusters/development/online-judge/core/values.yaml` set `SITE__DOMAIN: oj-dev.tloi.vn`, and in
-   `clusters/development/cloudflared/tunnel/config.yaml` change the `oj-k8s.tloi.shop` hostnames to it. Merge, and wait
+   in `terraform-cloudflare`'s tunnel file change the `oj.tloi.shop` hostnames to it. Merge both, and wait
    for `online-judge-core` to be Synced.
-2. Move the hostname to the new tunnel:
-   ```bash
-   cloudflared tunnel route dns --overwrite-dns control-plane-development oj-dev.tloi.vn
-   ```
+2. If `oj-dev.tloi.vn` already has a DNS record (the old stack), delete it right before the
+   `terraform-cloudflare` apply, or that apply fails on the existing record. Add `tloi.vn` to its `zones`.
 3. Re-run the step 8 checklist on https://oj-dev.tloi.vn. Everyone is logged out once (new `SECRET_KEY`).
 
-**Rollback:** `cloudflared tunnel route dns --overwrite-dns <old-tunnel> oj-dev.tloi.vn`. That takes seconds,
+**Rollback:** point `oj-dev.tloi.vn` back at the old stack in the Cloudflare dashboard (after removing it from the tunnel file). That takes seconds,
 because the old stack never stopped.
 
 From here on, merges to `main` deploy to **both** dev stacks (old: `deploy.yml` over SSH; new: ArgoCD)

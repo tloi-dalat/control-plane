@@ -1,10 +1,12 @@
 # The cluster's one way in, shared by every namespace: an outbound Cloudflare
-# Tunnel. Each service adds its hostnames to config.yaml.
+# Tunnel. It is remotely managed: the tunnel, its routes and the DNS records
+# live in tloi-dalat/terraform-cloudflare (zero-trust/tunnel/tunnels/
+# control-plane-development.yaml). This app only runs the connector with the
+# tunnel token, so a new hostname is a PR there, not here.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  # Sealed by `bootstrap/seal-secrets.sh development cloudflared <UUID>.json`.
-  - cloudflared-credentials.yaml
+  - cloudflared-token.yaml
 helmGlobals:
   chartHome: /tmp/charts
 helmCharts:
@@ -14,9 +16,13 @@ helmCharts:
     namespace: cloudflared
     releaseName: cloudflared-tunnel
     valuesFile: values.yaml
-# Routing lives here, in git: a route change is a reviewed PR. The hash suffix
-# makes an edit roll the pods. (Cloudflare drops open websockets when the
-# config reloads — browsers reconnect — but avoid changes during a contest.)
-configMapGenerator:
-  - name: cloudflared-tunnel-config
-    files: [config.yaml]
+# Restart the connectors when Terraform rotates the token in Infisical.
+patches:
+  - target: { group: apps, kind: Deployment|StatefulSet }
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment   # ignored: `target` picks the resources
+      metadata:
+        name: any
+        annotations:
+          secrets.infisical.com/auto-reload: "true"
