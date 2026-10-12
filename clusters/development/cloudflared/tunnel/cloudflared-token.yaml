@@ -1,0 +1,22 @@
+# The tunnel token, written into Infisical by tloi-dalat/terraform-cloudflare
+# (folder /cloudflared, environment development) and synced here as Secret
+# cloudflared-token. Routes and DNS live in that repo too.
+apiVersion: secrets.infisical.com/v1beta1
+kind: InfisicalStaticSecret
+metadata:
+  name: cloudflared-token
+  namespace: cloudflared
+spec:
+  infisicalAuthRef: { name: tloj, namespace: infisical }
+  syncOptions:
+    refreshInterval: 60s
+  sources:
+    - projectSlug: control-plane
+      environmentSlug: development
+      secretPath: /cloudflared
+      recursive: false
+  targets:
+    - name: cloudflared-token
+      namespace: cloudflared
+      kind: Secret
+      creationPolicy: Owner

@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Seal the two credentials that can't live in Infisical. Everything else (DB
+# Seal the one credential that can't live in Infisical: Infisical's own login. Everything else (DB
 # password, Django key, judge key, …) is typed in the Infisical web UI and
 # synced by the operator — see clusters/<env>/online-judge/secrets/.
 #
 #   bootstrap/seal-secrets.sh <env> infisical                 # machine identity login (prompted)
-#   bootstrap/seal-secrets.sh <env> cloudflared <UUID>.json   # Cloudflare Tunnel credentials
 #
 #   <env> is a directory under clusters/: development, production.
 #
@@ -17,7 +16,7 @@
 # to seal offline.
 set -euo pipefail
 
-usage() { sed -n '6,7p' "$0" | sed 's/^# *//' >&2; exit 1; }
+usage() { sed -n '6,6p' "$0" | sed 's/^# *//' >&2; exit 1; }
 ENVIRONMENT=${1:-}; WHAT=${2:-}
 [[ -n "$ENVIRONMENT" && -n "$WHAT" ]] || usage
 
@@ -47,14 +46,6 @@ case "$WHAT" in
     printf 'clientId=%s\nclientSecret=%s\n' "$client_id" "$client_secret" \
       | kubectl create secret generic infisical-universal-auth -n infisical \
           --dry-run=client -o yaml --from-env-file=/dev/stdin \
-      | kubeseal "${kubeseal_args[@]}" > "$out"
-    ;;
-  cloudflared)
-    # From `cloudflared tunnel create <name>`: ~/.cloudflared/<UUID>.json
-    creds=${3:?usage: seal-secrets.sh <env> cloudflared <UUID>.json}
-    out="clusters/${ENVIRONMENT}/cloudflared/tunnel/cloudflared-credentials.yaml"
-    kubectl create secret generic cloudflared-credentials -n cloudflared \
-        --dry-run=client -o yaml --from-file=credentials.json="$creds" \
       | kubeseal "${kubeseal_args[@]}" > "$out"
     ;;
   *) usage ;;

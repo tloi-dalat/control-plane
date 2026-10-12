@@ -4,7 +4,11 @@ image:
   repository: cloudflare/cloudflared
   tag: 2026.9.3
 replicaCount: 2              # stateless; Cloudflare balances across connectors
-args: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config/config.yaml", "run"]
+# Routes come from Cloudflare (remotely-managed tunnel); TUNNEL_TOKEN says which tunnel.
+args: ["tunnel", "--no-autoupdate", "--metrics", "0.0.0.0:2000", "run"]
+env:
+  TUNNEL_TOKEN:
+    valueFrom: { secretKeyRef: { name: cloudflared-token, key: TUNNEL_TOKEN } }
 ports:
   - { name: metrics, containerPort: 2000 }
 service: { enabled: false }
@@ -12,14 +16,6 @@ probes:
   liveness: { httpGet: { path: /ready, port: metrics }, initialDelaySeconds: 10, periodSeconds: 10, failureThreshold: 3 }
   readiness: { httpGet: { path: /ready, port: metrics }, periodSeconds: 10 }
 podSecurityContext: { runAsUser: 65532, runAsGroup: 65532, runAsNonRoot: true }   # image's nonroot user
-volumes:
-  - name: config
-    configMap: { name: cloudflared-tunnel-config }
-  - name: creds
-    secret: { secretName: cloudflared-credentials }
-volumeMounts:
-  - { name: config, mountPath: /etc/cloudflared/config, readOnly: true }
-  - { name: creds, mountPath: /etc/cloudflared/creds, readOnly: true }
 resources:
   requests: { cpu: 10m, memory: 32Mi }
   limits: { cpu: 250m, memory: 128Mi }
