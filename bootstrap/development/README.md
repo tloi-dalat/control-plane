@@ -6,7 +6,7 @@ The old stack keeps serving until step 12.
 
 Each step ends with a **check**. Don't move on until it passes.
 
-Versions pinned here: k3s `v1.36.5+k3s1`, ArgoCD `v3.5.3`, sealed-secrets chart `2.20.0` / kubeseal `0.40.0`,
+Versions pinned here: k3s `v1.36.5+k3s1`, ArgoCD `v3.5.3`, Infisical operator `v0.11.9`,
 cloudflared `2026.9.3`.
 
 ---
@@ -109,22 +109,10 @@ kubectl apply -f clusters/development/application-set.yaml
 kubectl -n argocd get applications -w
 ```
 
-`kube-system-sealed-secrets` and `infisical-operator` go Healthy first. `infisical-auth` and the
-`online-judge-*` apps keep retrying until the secrets exist (step 7). That's expected.
+`infisical-operator` goes Healthy first. The `online-judge-*` apps keep retrying until the
+Infisical login and its secrets exist (step 7). That's expected.
 
-## 6. Back up the sealed-secrets key: do not skip
-
-This key is the one thing you can't recreate. Rebuild the cluster without it, and every committed
-SealedSecret becomes unreadable: ArgoCD will sync happily while every pod crash-loops.
-
-```bash
-kubectl -n kube-system get secret -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml > sealed-secrets-key-dev.yaml
-# Move it OFF the VPS into your password manager or encrypted storage, then:
-shred -u sealed-secrets-key-dev.yaml
-```
-
-**Restore** (rebuilt cluster): `kubectl apply -f sealed-secrets-key-dev.yaml` **before** step 5, then
-restart the controller.
+## 6. (removed: there is no sealed-secrets key to back up any more)
 
 ## 7. Tunnel and secrets
 
@@ -135,28 +123,29 @@ picks it up. No `cloudflared` CLI needed. See that repo's README for its one-tim
 
 **App secrets live in Infisical** (https://app.infisical.com, free plan):
 
-1. Create a project `TLOJ`. Project Settings → Environments: set the slugs to `development` and
+1. Create a project `TLOI`. Project Settings → Environments: set the slugs to `development` and
    `production` (delete `staging`). Copy the **project slug** into `projectSlug:` in
    `clusters/development/online-judge/secrets/online-judge-core-env.yaml` and `online-judge-judge-env.yaml`.
 2. In environment `development`, create folder `/online-judge` with two subfolders, `core` and `judge`.
    `bootstrap/new-app-secrets.sh` prints fresh values: import the first block into `/online-judge/core`
    (fill in `MYSQL__PASSWORD` from step 2 and the **rotated** Google secret), and `JUDGE__KEY` into
    `/online-judge/judge`.
-3. Organization → Access Control → Identities → create `tloj-development` (org role: No Access).
+3. Organization → Access Control → Identities → create `tloi-development` (org role: No Access).
    Its Universal Auth → create a Client Secret. In the project → Access Control → Machine Identities →
    add it as **Viewer**.
 
-Then seal the one credential that can't live in Infisical (its own login), on the VPS:
+Then give the cluster its Infisical login, the one credential that can't live in Infisical. It is
+not in git: run this once per cluster (again only after a rebuild or to rotate it):
 
 ```bash
-curl -sSL https://github.com/bitnami/sealed-secrets/releases/download/v0.40.0/kubeseal-0.40.0-linux-amd64.tar.gz \
-  | tar xz kubeseal && sudo install kubeseal /usr/local/bin/ && rm kubeseal
-bootstrap/seal-secrets.sh development infisical                          # prompts for Client ID + Secret
+bootstrap/infisical-login.sh development      # prompts for the tloi-development Client ID + Secret
 ```
+
+Keep the client secret in your password manager, or just create a new one in Infisical when needed.
 
 - In the dev site admin → **Judges → Add judge**: name `online-judge-judge-0`, key = `JUDGE__KEY` from
   Infisical.
-- Commit `clusters/development/infisical/auth/` and `online-judge/secrets/`, then push.
+- Commit `online-judge/secrets/` (the project slug), then push.
 
 **Check:** `kubectl -n argocd get applications` shows everything **Synced / Healthy**.
 `kubectl -n online-judge get pods`: all Running, `online-judge-site-migrate` Completed.
@@ -215,5 +204,5 @@ pointed at the paths in `clusters/development/online-judge/storage/`. Then **res
 ## Disaster recovery (dev VPS lost)
 
 New VPS → restore MySQL and the media/problem directories from restic → steps 1–4 →
-**restore the sealed-secrets key (step 6)** → step 5. ArgoCD redeploys everything from git, and the app
-secrets come back from Infisical: nothing needs re-entering.
+step 5 → `bootstrap/infisical-login.sh development` (step 7). ArgoCD redeploys everything from git,
+and the app secrets come back from Infisical: nothing else needs re-entering.
