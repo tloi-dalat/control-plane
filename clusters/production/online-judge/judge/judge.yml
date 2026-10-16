@@ -1,0 +1,4 @@
+judge_version: 2
+problem_storage_globs:
+  - id: local
+    glob: /problems/*

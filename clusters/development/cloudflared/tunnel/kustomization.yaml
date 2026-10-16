@@ -12,7 +12,7 @@ helmGlobals:
 helmCharts:
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
-    version: 0.1.0
+    version: 0.2.0
     namespace: cloudflared
     releaseName: cloudflared-tunnel
     valuesFile: values.yaml

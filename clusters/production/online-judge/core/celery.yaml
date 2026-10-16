@@ -1,0 +1,7 @@
+# Background tasks (incl. Codeforces Polygon import, which writes problem data).
+# Same command as upstream VNOJ's container; no beat — it doesn't run one either.
+replicaCount: 1
+command: ["celery", "-A", "dmoj_celery", "worker", "-l", "info", "--concurrency", "2"]
+resources:
+  requests: { cpu: 100m, memory: 256Mi }
+  limits: { cpu: "1", memory: 768Mi }

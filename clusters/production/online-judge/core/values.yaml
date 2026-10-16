@@ -1,0 +1,71 @@
+# Shared by site, bridge and celery (role overrides: site.yaml, bridge.yaml,
+# celery.yaml — lists there REPLACE the lists here, maps merge).
+#
+# PRODUCTION. Nothing deploys here automatically: a release is a reviewed PR
+# that sets image.tag to a release tag of tloi-dalat/TLOJ (X.Y.Z, cut by its
+# release.yaml), one tag moving site, bridge and celery together. Bump
+# ../wsevent/values.yaml to the SAME tag in the same PR (same repo, same release).
+# The tag build's run summary prints both blocks.
+#
+# Non-secret settings only. Secrets come from Infisical (Secret online-judge-core-env).
+image:
+  repository: ghcr.io/tloi-dalat/oj-core
+  tag: CHANGEME        # a release tag, e.g. 0.1.0 — never main-<sha>
+
+env:
+  ENV: prd
+  # Everything URL-shaped derives from this one value. It must also be a
+  # hostname in terraform-cloudflare's control-plane-production.yaml.
+  SITE__DOMAIN: oj.tloi.vn
+  SITE__NAME: TLOJ
+  DJANGO__DEBUG: "false"
+  DJANGO__REGISTRATION_OPEN: "true"
+  # Assumes MariaDB on the production VPS host, as in dev: 10.42.0.1 is the host
+  # as seen from its pods (k3s bridge on the only node). CHANGEME if the
+  # database lives elsewhere.
+  MYSQL__HOST: "10.42.0.1"
+  MYSQL__PORT: "3306"
+  MYSQL__DATABASE: dmoj
+  MYSQL__USER: dmoj_k8s
+  REDIS__HOST: online-judge-redis
+  REDIS__CACHE_DB: "1"
+  REDIS__CELERY_DB: "2"
+  PROBLEM__DATA_ROOT: /problems
+  MEDIA__ROOT: /media
+  BRIDGE__CONNECT_HOST: online-judge-bridge
+  EVENT__POST: ws://online-judge-wsevent:15101/
+  # Production sends real mail (password resets, admin errors). SMTP relay
+  # settings here; MAIL__PASSWORD goes in Infisical (/online-judge/core).
+  MAIL__BACKEND: django.core.mail.backends.smtp.EmailBackend
+  MAIL__HOST: CHANGEME       # SMTP relay host
+  MAIL__PORT: "587"
+  MAIL__USE_TLS: "true"
+  MAIL__USER: CHANGEME
+  MAIL__ADMINS: kitsune:minhquandinhcao@gmail.com
+  # OAuth client ID is public (it appears in every login redirect).
+  # The client SECRET lives in Infisical (online-judge-core-env).
+  # CHANGEME: the production OAuth client (or the dev one, with
+  # https://<SITE__DOMAIN>/complete/google-oauth2/ added to its redirect URIs).
+  SOCIAL__GOOGLE_KEY: 15854195969-1d595g1fuu6fu6qabi0ht7952sm01tq4.apps.googleusercontent.com
+  LOG__LEVEL: INFO
+
+envFrom:
+  - secretRef: { name: online-judge-core-env }   # synced from Infisical, see ../secrets/online-judge-core-env.yaml
+
+podSecurityContext:
+  # Must match the owner of the media and problem directories on the
+  # production VPS, or uploads fail with "Permission denied".
+  runAsUser: 1001      # CHANGEME: `id -u tloi` on the production VPS
+  runAsGroup: 1001     # CHANGEME: `id -g tloi`
+  runAsNonRoot: true
+  # No fsGroup, on purpose: kubelet would recursively chown the existing media
+  # and problem directories on every mount.
+
+volumes:
+  - name: media
+    persistentVolumeClaim: { claimName: online-judge-media }
+  - name: problems
+    persistentVolumeClaim: { claimName: online-judge-problems }
+volumeMounts:
+  - { name: media, mountPath: /media }
+  - { name: problems, mountPath: /problems }

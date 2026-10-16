@@ -1,0 +1,15 @@
+# Machine identity "tloi-production" (Infisical → Organization → Access
+# Control → Identities), Universal Auth, Viewer on the TLOI project.
+# Its credentials: Secret infisical-bootstrap, created by
+# bootstrap/infisical-login.sh (not managed by ArgoCD).
+apiVersion: secrets.infisical.com/v1beta1
+kind: InfisicalAuth
+metadata:
+  name: tloi
+  namespace: infisical
+spec:
+  infisicalConnectionRef: { name: infisical-cloud, namespace: infisical }
+  method: universal
+  universal:
+    clientIdRef: { name: infisical-bootstrap, namespace: infisical, key: clientId }
+    clientSecretRef: { name: infisical-bootstrap, namespace: infisical, key: clientSecret }

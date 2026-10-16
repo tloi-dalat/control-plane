@@ -1,0 +1,70 @@
+# The judge runs UNTRUSTED code submitted by any user. On a single-node
+# production VPS it shares the node with everything else, so the controls
+# below are the isolation:
+#   - cptbox sandbox (ptrace + seccomp) inside the container
+#   - NetworkPolicy: may reach the bridge and DNS, nothing else — not MySQL,
+#     not Redis, not the Kubernetes API, not the internet
+#   - no ServiceAccount token, problem data read-only, own Secret with only its key
+# Prove it with the hostile-submission test before going live (dev plan §5.3).
+# A dedicated tainted judge node is the next step, but it then needs its own
+# copy of the problem data (the problems volume is local to the data node).
+#
+# PRODUCTION: a release is a reviewed PR setting image.tag to a release tag of
+# tloi-dalat/judge-server (X.Y.Z). Its tag build's summary prints this block.
+kind: StatefulSet            # pods online-judge-judge-0, -1, …; they register as judge-0, judge-1, …
+# Fixed on purpose (no autoscaling): removing a judge mid-grade marks that
+# submission IE. Each judge needs its name registered in the site admin, all
+# with the same JUDGE__KEY: judge-0 … judge-4.
+# Changing this? Register/remove the names to match, and keep it at or below the
+# cores the VPS can spare, or time-limit verdicts get unfair.
+replicaCount: 5
+image:
+  repository: ghcr.io/tloi-dalat/oj-judge
+  tag: CHANGEME        # a release tag, e.g. 0.1.0
+args: ["run", "-c", "/config/judge.yml", "online-judge-bridge", "$(JUDGE__NAME)", "$(JUDGE__KEY)"]
+env:
+  # The image already contains an installed judge; skip the entrypoint's
+  # network-dependent `pip install -e .` on every restart.
+  DMOJ_SKIP_DEV_INSTALL: "1"
+  # Registered name judge-0, judge-1, …: built from the StatefulSet's pod-index
+  # label, not the pod name (online-judge-judge-<n>). $(JUDGE__INDEX) expands
+  # because the chart renders env sorted by name and JUDGE__INDEX sorts first.
+  JUDGE__INDEX:
+    valueFrom: { fieldRef: { fieldPath: "metadata.labels['apps.kubernetes.io/pod-index']" } }
+  JUDGE__NAME: judge-$(JUDGE__INDEX)
+  JUDGE__KEY:
+    valueFrom: { secretKeyRef: { name: online-judge-judge-env, key: JUDGE__KEY } }
+# Starts as root on purpose: the entrypoint drops to the `judge` user itself
+# (setpriv). cptbox needs ptrace; it installs its own seccomp filter per
+# sandboxed process, which the runtime's default profile would block.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities: { add: ["SYS_PTRACE"] }
+  seccompProfile: { type: Unconfined }
+resources:
+  requests: { cpu: 500m, memory: 512Mi }
+  limits: { cpu: "2", memory: 1536Mi }   # JVM/Kotlin compiles are the peak
+volumes:
+  - name: config
+    configMap: { name: online-judge-judge-config }
+  - name: problems
+    persistentVolumeClaim: { claimName: online-judge-problems, readOnly: true }
+volumeMounts:
+  - { name: config, mountPath: /config, readOnly: true }
+  - { name: problems, mountPath: /problems, readOnly: true }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress, Egress]
+  ingress: []                # nothing connects to a judge
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: online-judge-bridge } }
+      ports:
+        - { port: 9999, protocol: TCP }
+    # Without DNS it can't resolve "online-judge-bridge".
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { k8s-app: kube-dns } }
+      ports:
+        - { port: 53, protocol: UDP }
+        - { port: 53, protocol: TCP }

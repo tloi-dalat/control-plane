@@ -1,0 +1,17 @@
+# Each merge to main that changes an image tag becomes a Deployment in the app
+# repo it was built from (Deployments tab, environments development and
+# production). Bot commits from repo-dispatch.yaml are recorded there instead.
+name: deployments
+on:
+  push:
+    branches: [main]
+    paths: ['clusters/*/*/*/values.yaml']
+jobs:
+  record:
+    permissions:
+      contents: read
+    uses: tloi-dalat/reusable-workflow/.github/workflows/control-plane-deployments.yaml@main
+    with:
+      before: ${{ github.event.before }}
+      after: ${{ github.sha }}
+    secrets: inherit   # org secrets CI_APP_ID / CI_APP_PRIVATE_KEY (the CI GitHub App)
