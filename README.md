@@ -69,8 +69,8 @@ Every app uses the shared chart `oci://ghcr.io/tloi-dalat/charts/app`, pinned in
 
 ## GitHub Deployments and Releases
 
-`deployments.yaml` (merges to `main`) and `repo-dispatch.yaml` (bot commits) call
-`control-plane-deployments.yaml`: each changed `image.tag` becomes a Deployment in the repo the image
+`deployments.yaml` runs on every push to `main` (merges, and the bot commits, which are pushed with the
+CI App) and calls `control-plane-deployments.yaml`: each changed `image.tag` becomes a Deployment in the repo the image
 was built from. "Success" means the change is on `main`; ArgoCD applies it within minutes. One-time:
 
 - Nothing per repo: the workflows use the org's CI GitHub App (org secrets `CI_APP_ID`,
