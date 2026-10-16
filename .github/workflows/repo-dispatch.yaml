@@ -6,17 +6,6 @@ on:
 jobs:
   sync:
     permissions:
-      contents: write
-    uses: tloi-dalat/reusable-workflow/.github/workflows/control-plane-repo-dispatch.yaml@main
-
-  # The bot commit is pushed with GITHUB_TOKEN, which triggers no workflow, so
-  # deployments.yaml never sees it: record its deployment here.
-  deployments:
-    needs: [sync]
-    if: needs.sync.outputs.commit != ''
-    permissions:
       contents: read
-    uses: tloi-dalat/reusable-workflow/.github/workflows/control-plane-deployments.yaml@main
-    with:
-      after: ${{ needs.sync.outputs.commit }}
-    secrets: inherit   # org secrets CI_APP_ID / CI_APP_PRIVATE_KEY (the CI GitHub App)
+    uses: tloi-dalat/reusable-workflow/.github/workflows/control-plane-repo-dispatch.yaml@main
+    secrets: inherit

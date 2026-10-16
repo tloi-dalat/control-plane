@@ -1,6 +1,6 @@
-# Each merge to main that changes an image tag becomes a Deployment in the app
+# Each push to main that changes an image tag becomes a Deployment in the app
 # repo it was built from (Deployments tab, environments development and
-# production). Bot commits from repo-dispatch.yaml are recorded there instead.
+# production): human merges and repo-dispatch.yaml's bot commits alike.
 name: deployments
 on:
   push:
@@ -14,4 +14,4 @@ jobs:
     with:
       before: ${{ github.event.before }}
       after: ${{ github.sha }}
-    secrets: inherit   # org secrets CI_APP_ID / CI_APP_PRIVATE_KEY (the CI GitHub App)
+    secrets: inherit
