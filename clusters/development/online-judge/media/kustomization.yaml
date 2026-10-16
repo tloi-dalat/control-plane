@@ -5,7 +5,7 @@ helmGlobals:
 helmCharts:
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
-    version: 0.1.0
+    version: 0.2.0
     namespace: online-judge
     releaseName: online-judge-media
     valuesFile: values.yaml

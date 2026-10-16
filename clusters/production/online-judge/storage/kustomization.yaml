@@ -1,0 +1,8 @@
+# Media and problem data live on the production VPS's own disk (pre-created
+# directories, Retain, never pruned). Back them up: nothing regenerates them.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - storageclass.yaml
+  - media.yaml
+  - problems.yaml

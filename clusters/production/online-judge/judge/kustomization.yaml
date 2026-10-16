@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - repo: oci://ghcr.io/tloi-dalat/charts
+    name: app
+    version: 0.2.0
+    namespace: online-judge
+    releaseName: online-judge-judge
+    valuesFile: values.yaml
+configMapGenerator:
+  - name: online-judge-judge-config
+    files: [judge.yml]
+# Restart the pods when Infisical changes a secret they read (the operator
+# watches workloads carrying this annotation).
+patches:
+  - target: { group: apps, kind: Deployment|StatefulSet }
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment   # ignored: `target` picks the resources
+      metadata:
+        name: any
+        annotations:
+          secrets.infisical.com/auto-reload: "true"

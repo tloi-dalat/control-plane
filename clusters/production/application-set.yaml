@@ -1,0 +1,49 @@
+# One ArgoCD Application per directory clusters/production/<namespace>/<app>:
+#   clusters/production/online-judge/core     → Application "online-judge-core", namespace online-judge
+# Applied once by hand at bootstrap, on the PRODUCTION cluster only; everything
+# after is a git commit. Same shape as ../development/application-set.yaml.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: production
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/production/argocd/repo-credentials.example.yaml)
+        revision: main
+        directories:
+          - path: clusters/production/*/*
+  syncPolicy:
+    # Deleting this ApplicationSet must never take the workloads (or volumes)
+    # down with it.
+    preserveResourcesOnDeletion: true
+  template:
+    metadata:
+      name: '{{ index .path.segments 2 }}-{{ index .path.segments 3 }}'
+      annotations:
+        argocd.argoproj.io/manifest-generate-paths: .
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/production/argocd/repo-credentials.example.yaml)
+        targetRevision: main
+        path: '{{ .path.path }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{ index .path.segments 2 }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        # Apps come up in any order (e.g. the migrate hook before the secrets
+        # exist); retries let it converge instead of failing once.
+        retry:
+          limit: 10
+          backoff: { duration: 30s, factor: 2, maxDuration: 10m }
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - PruneLast=true

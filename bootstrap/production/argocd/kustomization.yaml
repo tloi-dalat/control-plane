@@ -1,0 +1,19 @@
+# ArgoCD, pinned. Apply with server-side apply (the CRDs are too large for
+# client-side apply):
+#   kubectl apply --server-side --force-conflicts -k bootstrap/production/argocd
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+resources:
+  - namespace.yaml
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.3/manifests/install.yaml
+patches:
+  # Every app here is a kustomization with helmCharts; ArgoCD's kustomize
+  # won't inflate them without this.
+  - patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: argocd-cm
+      data:
+        kustomize.buildOptions: --enable-helm

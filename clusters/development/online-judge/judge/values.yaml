@@ -6,8 +6,8 @@
 #   - no ServiceAccount token, problem data read-only, own Secret with only its key
 # Prove it with the hostile-submission test before cutover (dev plan §5.3).
 # In prd the judge moves to its own tainted node.
-kind: StatefulSet            # stable identities: online-judge-judge-0, online-judge-judge-1, …
-replicaCount: 1              # each pod needs its name registered in the site admin
+kind: StatefulSet            # pods online-judge-judge-0, -1, …; they register as judge-0, judge-1, …
+replicaCount: 1              # each judge needs its name (judge-<n>) registered in the site admin
 image:
   repository: ghcr.io/tloi-dalat/oj-judge
   tag: main-b5a4c91
@@ -16,8 +16,12 @@ env:
   # The image already contains an installed judge; skip the entrypoint's
   # network-dependent `pip install -e .` on every restart.
   DMOJ_SKIP_DEV_INSTALL: "1"
-  JUDGE__NAME:
-    valueFrom: { fieldRef: { fieldPath: metadata.name } }
+  # Registered name judge-0, judge-1, …: built from the StatefulSet's pod-index
+  # label, not the pod name (online-judge-judge-<n>). $(JUDGE__INDEX) expands
+  # because the chart renders env sorted by name and JUDGE__INDEX sorts first.
+  JUDGE__INDEX:
+    valueFrom: { fieldRef: { fieldPath: "metadata.labels['apps.kubernetes.io/pod-index']" } }
+  JUDGE__NAME: judge-$(JUDGE__INDEX)
   JUDGE__KEY:
     valueFrom: { secretKeyRef: { name: online-judge-judge-env, key: JUDGE__KEY } }
 # Starts as root on purpose: the entrypoint drops to the `judge` user itself

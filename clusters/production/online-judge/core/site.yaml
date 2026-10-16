@@ -1,0 +1,46 @@
+# gunicorn (the image's default command).
+# Stateless, so it scales on CPU (HPA; the chart then omits spec.replicas and
+# ArgoCD leaves the count to the HPA). bridge, celery, wsevent, redis and the
+# judge keep a fixed replicaCount: they hold state or have registered names.
+#
+# One VPS: more pods only spread load over the node's cores, so maxReplicas is
+# bounded by the node (each pod may use up to resources.limits). The HPA reacts
+# in about a minute; before a big contest, raise minReplicas in a PR instead of
+# waiting for it.
+autoscaling:
+  enabled: true
+  minReplicas: 2       # never below 2: a rollout or a crash keeps one serving
+  maxReplicas: 4       # CHANGEME: what the production VPS can hold (4 × 1 CPU / 768Mi at the limits)
+  targetCPUUtilizationPercentage: 70   # % of requests.cpu below, i.e. ~210m per pod
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies: [{ type: Pods, value: 2, periodSeconds: 60 }]
+    scaleDown:
+      # Contests are bursty (start, last minutes): hold capacity through the lulls.
+      stabilizationWindowSeconds: 600
+      policies: [{ type: Pods, value: 1, periodSeconds: 120 }]
+strategy:
+  type: RollingUpdate
+  rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+ports:
+  - { name: http, containerPort: 8000 }
+# TCP, not HTTP: kubelet probes send the pod IP as Host, which ALLOWED_HOSTS
+# rejects with a 400 (dev plan §4.3).
+probes:
+  readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
+  liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6 }
+# requests.cpu is what the HPA target is a percentage of: set it to one pod's
+# real steady-state usage (measure with `kubectl top pod`), not a guess.
+resources:
+  requests: { cpu: 300m, memory: 384Mi }
+  limits: { cpu: "1", memory: 768Mi }
+
+# PreSync hook: `migrate` runs to completion before site, bridge or celery
+# update. On failure the sync stops and the old pods keep serving.
+migrate:
+  enabled: true
+  command: ["python", "manage.py", "migrate", "--noinput"]
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 512Mi }

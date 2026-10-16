@@ -1,0 +1,23 @@
+# Django cache (db 1) + Celery broker (db 2). No persistence: losing it costs a
+# cold cache and any queued tasks, nothing else.
+image:
+  repository: redis
+  tag: 7.4.11-alpine
+replicaCount: 1
+strategy: { type: Recreate }
+# volatile-lru evicts only keys with a TTL (cache entries) and never the
+# Celery queue, which has none.
+args: ["--requirepass", "$(REDIS__PASSWORD)", "--save", "", "--appendonly", "no",
+       "--maxmemory", "256mb", "--maxmemory-policy", "volatile-lru"]
+env:
+  REDIS__PASSWORD:
+    valueFrom: { secretKeyRef: { name: online-judge-core-env, key: REDIS__PASSWORD } }
+ports:
+  - { name: redis, containerPort: 6379 }
+probes:
+  readiness: { tcpSocket: { port: redis }, periodSeconds: 10 }
+  liveness: { tcpSocket: { port: redis }, periodSeconds: 20, failureThreshold: 6 }
+podSecurityContext: { runAsUser: 999, runAsGroup: 1000, runAsNonRoot: true }   # `redis` user in the image
+resources:
+  requests: { cpu: 20m, memory: 64Mi }
+  limits: { cpu: 500m, memory: 320Mi }

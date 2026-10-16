@@ -16,11 +16,11 @@ cloudflared `2026.9.3`.
 1. **Push the repos in this order**, since each depends on the previous one:
    1. `tloi-dalat/reusable-workflow`. It must be **public**: the app repos calling it are public, and
       GitHub doesn't let a public repo call workflows in a private one.
-   2. `tloi-dalat/charts`. Its workflow publishes `charts/app:0.1.0`. Then on GHCR, set the package
+   2. `tloi-dalat/charts`. Its workflow publishes `charts/app` (every version this repo pins). Then on GHCR, set the package
       **public**, because ArgoCD pulls it without credentials.
    3. `tloi-dalat/control-plane` (this repo, private).
-2. **Secrets for CI**: create `CONTROL_PLANE_TOKEN` (fine-grained PAT, *Contents: read & write* on
-   `control-plane` only) as an org secret, or in both `TLOJ` and `judge-server`.
+2. **Credentials for CI**: create the org's CI GitHub App and its org secrets `CI_APP_ID` /
+   `CI_APP_PRIVATE_KEY` (reusable-workflow's README, "One-time setup").
 3. **Merge the `feat/k8s-dev` branches** in `TLOJ` and `judge-server`. Their first `main` builds push
    `oj-core`, `oj-wsevent` and `oj-judge` to GHCR, then commit tag bumps here, replacing `main-0000000`.
    Set the three packages **public** (or add an image pull secret).
@@ -143,7 +143,7 @@ bootstrap/infisical-login.sh development      # prompts for the tloi-development
 
 Keep the client secret in your password manager, or just create a new one in Infisical when needed.
 
-- In the dev site admin → **Judges → Add judge**: name `online-judge-judge-0`, key = `JUDGE__KEY` from
+- In the dev site admin → **Judges → Add judge**: name `judge-0`, key = `JUDGE__KEY` from
   Infisical.
 - Commit `online-judge/secrets/` (the project slug), then push.
 
