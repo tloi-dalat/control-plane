@@ -10,7 +10,7 @@
 autoscaling:
   enabled: true
   minReplicas: 2       # never below 2: a rollout or a crash keeps one serving
-  maxReplicas: 4       # CHANGEME: what the production VPS can hold (4 × 1 CPU / 768Mi at the limits)
+  maxReplicas: 4       # 12 cores / 32 GiB VPS, shared with other services: 4 × 1 CPU / 768Mi at the limits
   targetCPUUtilizationPercentage: 70   # % of requests.cpu below, i.e. ~210m per pod
   behavior:
     scaleUp:

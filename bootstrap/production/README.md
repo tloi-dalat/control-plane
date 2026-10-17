@@ -10,15 +10,16 @@ lists only what differs. Nothing here touches the dev cluster.
    `TLOJ` and `judge-server`: create the `release` branch from `main` and push it (or merge `main` into
    it). `release.yaml` tags `0.0.0`, builds `oj-core`, `oj-wsevent`, `oj-judge` as `:0.0.0`, and the
    build's run summary prints the `image:` blocks to paste below.
-2. **Fill in every `CHANGEME`** under `clusters/production/` (`grep -rn CHANGEME clusters/production`):
+2. **Fill in the remaining `CHANGEME`s** (`grep -rn CHANGEME clusters/production bootstrap/production`).
+   Already set for the production VPS (Ubuntu 24.04, 12 cores, 32 GiB, shared with mailcow and CTF
+   containers): data paths `/home/tloi/media` and `/home/tloi/problem_data` (the old stack's, no copy),
+   UID/GID 1001, MariaDB on the host, `maxReplicas: 4`, k3s config. Still open:
 
    | Where | What |
    |---|---|
-   | `online-judge/{core,wsevent,judge}/values.yaml` | `image.tag`: the release to run. `core` and `wsevent` always carry the **same** tag |
-   | `online-judge/core/values.yaml` | `SITE__DOMAIN`, `DJANGO__REGISTRATION_OPEN`, `MYSQL__HOST` (if MariaDB is not on the VPS host), SMTP `MAIL__*`, `SOCIAL__GOOGLE_KEY` |
-   | `online-judge/core/site.yaml` | `autoscaling.maxReplicas` for the VPS size |
-   | `online-judge/{core,media}/values.yaml` | UID/GID owning the data directories (`id tloi` on the production VPS) |
-   | `online-judge/storage/{media,problems}.yaml` | the media and problem-data directories on the production VPS |
+   | `online-judge/judge/values.yaml` | `image.tag`, once judge-server has a release (`core`/`wsevent` run `0.0.0`) |
+   | `online-judge/core/values.yaml` | SMTP `MAIL__HOST` / `MAIL__USER`, `SOCIAL__GOOGLE_KEY`; `SITE__DOMAIN` is the test hostname until cutover |
+   | `bootstrap/production/mysql-k8s-user.sql` | the `dmoj_k8s` password (edit on the VPS only, never commit it) |
 
 3. **Tunnel**: in `tloi-dalat/terraform-cloudflare`, add `zero-trust/tunnel/tunnels/control-plane-production.yaml`
    (copy the development one, production hostnames; Infisical environment `production`, folder `/cloudflared`).
@@ -28,7 +29,7 @@ lists only what differs. Nothing here touches the dev cluster.
 
 | Step | Development | Production |
 |---|---|---|
-| 2. MySQL | `bootstrap/development/mysql-k8s-user.sql` | `bootstrap/production/mysql-k8s-user.sql` (its own password) |
+| 2. MySQL | `bootstrap/development/mysql-k8s-user.sql` | **Keep the existing MariaDB 10.11** (the old stack's, data already there). Copy `bootstrap/production/60-tloj.cnf` to `/etc/mysql/mariadb.conf.d/` and restart MariaDB (a few seconds), then `bootstrap/production/mysql-k8s-user.sql` (its own password). No `skip-name-resolve` while the old stack runs |
 | 3. k3s | `bootstrap/development/k3s-config.yaml` | `bootstrap/production/k3s-config.yaml` (adjust `system-reserved` to the VPS) |
 | 4. ArgoCD | `-k bootstrap/development/argocd` | `-k bootstrap/production/argocd` |
 | 5. ApplicationSet | `clusters/development/application-set.yaml` | `clusters/production/application-set.yaml` |
