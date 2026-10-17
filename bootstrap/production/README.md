@@ -33,6 +33,7 @@ lists only what differs. Nothing here touches the dev cluster.
 | 3. k3s | `bootstrap/development/k3s-config.yaml` | `bootstrap/production/k3s-config.yaml` (adjust `system-reserved` to the VPS) |
 | 4. ArgoCD | `-k bootstrap/development/argocd` | `-k bootstrap/production/argocd` |
 | 5. ApplicationSet | `clusters/development/application-set.yaml` | `clusters/production/application-set.yaml` |
+| ArgoCD webhook | `argocd-hook.tloi.shop` | `argocd-hook.tloi.vn` (section below) |
 | 7. Infisical | environment `development`, identity `tloi-development` | environment `production`, folders `/online-judge/core` (+ `MAIL__PASSWORD`) and `/online-judge/judge`, identity `tloi-production` (Viewer). Fresh values from `bootstrap/new-app-secrets.sh` — never reuse dev's |
 | 7. Login | `bootstrap/infisical-login.sh development` | `bootstrap/infisical-login.sh production` (check the kubectl context it prints) |
 | Judge | `judge-0` in the dev site admin | five judges: `judge-0` … `judge-4` in the production site admin, all with the production `JUDGE__KEY` (snippet below) |
@@ -48,3 +49,24 @@ for i in range(5): Judge.objects.get_or_create(name=f'judge-{i}', defaults={'aut
 
 **Check:** `kubectl -n argocd get applications` shows everything **Synced / Healthy**, and
 `kubectl -n online-judge get pods -o jsonpath='{..image}'` shows `:X.Y.Z` images only.
+
+## ArgoCD webhook
+
+A GitHub push webhook makes ArgoCD sync a control-plane commit within seconds instead of at its
+next 3-minute poll. `terraform-cloudflare`'s `control-plane-production.yaml` exposes only
+`/api/webhook` of argocd-server at `argocd-hook.tloi.vn`; ArgoCD rejects any payload not signed
+with the shared secret. The secret is set by hand, like the Infisical login (not in git):
+
+```bash
+SECRET=$(openssl rand -hex 32); echo "$SECRET"     # paste it into GitHub below, then forget it
+kubectl -n argocd patch secret argocd-secret --type merge \
+  -p "{\"stringData\":{\"webhook.github.secret\":\"$SECRET\"}}"
+```
+
+Then in `tloi-dalat/control-plane` → Settings → Webhooks → Add webhook: payload URL
+`https://argocd-hook.tloi.vn/api/webhook`, content type `application/json`, that secret,
+**Just the push event**. Dev keeps its own webhook (`argocd-hook.tloi.shop`, its own secret):
+each ArgoCD refreshes only its own apps.
+
+**Check:** the webhook's Recent Deliveries show `200`, and after a merge
+`kubectl -n argocd get applications` picks up the new revision within seconds.
