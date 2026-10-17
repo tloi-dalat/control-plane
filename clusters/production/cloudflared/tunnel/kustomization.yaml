@@ -1,8 +1,3 @@
-# The cluster's one way in, shared by every namespace: an outbound Cloudflare
-# Tunnel. It is remotely managed: the tunnel, its routes and the DNS records
-# live in tloi-dalat/terraform-cloudflare (zero-trust/tunnel/tunnels/
-# control-plane-production.yaml). This app only runs the connector with the
-# tunnel token, so a new hostname is a PR there, not here.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -16,12 +11,11 @@ helmCharts:
     namespace: cloudflared
     releaseName: cloudflared-tunnel
     valuesFile: values.yaml
-# Restart the connectors when Terraform rotates the token in Infisical.
 patches:
   - target: { group: apps, kind: Deployment|StatefulSet }
     patch: |-
       apiVersion: apps/v1
-      kind: Deployment   # ignored: `target` picks the resources
+      kind: Deployment
       metadata:
         name: any
         annotations:

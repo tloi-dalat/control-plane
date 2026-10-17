@@ -4,4 +4,4 @@ metadata:
   name: infisical-cloud
   namespace: infisical
 spec:
-  address: https://app.infisical.com   # US cloud. EU region: https://eu.infisical.com
+  address: https://app.infisical.com

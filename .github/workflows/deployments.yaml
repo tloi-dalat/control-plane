@@ -1,6 +1,3 @@
-# Each push to main that changes an image tag becomes a Deployment in the app
-# repo it was built from (Deployments tab, environments development and
-# production): human merges and repo-dispatch.yaml's bot commits alike.
 name: deployments
 on:
   push:

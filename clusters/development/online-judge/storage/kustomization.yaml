@@ -1,6 +1,3 @@
-# Media and problem data live on the dev VPS's own disk, in the directories the
-# current dev stack already uses: no copy, no sync gap at cutover, and the old
-# stack keeps working during side-by-side.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

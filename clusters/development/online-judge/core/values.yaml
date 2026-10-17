@@ -1,24 +1,13 @@
-# Shared by site, bridge and celery (role overrides: site.yaml, bridge.yaml,
-# celery.yaml — lists there REPLACE the lists here, maps merge).
-#
-# CI bumps image.tag in THIS file: one tag moves all three roles together.
-# Non-secret settings only. Secrets come from Infisical (Secret online-judge-core-env).
 image:
   repository: ghcr.io/tloi-dalat/oj-core
   tag: main-ddcd076
 
 env:
   ENV: dev
-  # Test hostname during side-by-side; switch to oj-dev.tloi.vn at cutover
-  # (dev plan §8). Everything URL-shaped derives from this one value.
   SITE__DOMAIN: oj.tloi.shop
   SITE__NAME: TLOJ
   DJANGO__DEBUG: "false"
-  # Dev is invite-only: no sign-up form.
   DJANGO__REGISTRATION_OPEN: "false"
-  # MariaDB runs on the VPS host. 10.42.0.1 is the host as seen from its pods
-  # (k3s bridge on the only node). Not a selector-less Service: ArgoCD 3.x
-  # excludes EndpointSlice/Endpoints by default, so the Service had no backend.
   MYSQL__HOST: "10.42.0.1"
   MYSQL__PORT: "3306"
   MYSQL__DATABASE: dmoj
@@ -30,25 +19,18 @@ env:
   MEDIA__ROOT: /media
   BRIDGE__CONNECT_HOST: online-judge-bridge
   EVENT__POST: ws://online-judge-wsevent:15101/
-  # No MTA in the cluster: dev prints mail to the pod log.
   MAIL__BACKEND: django.core.mail.backends.console.EmailBackend
   MAIL__ADMINS: kitsune:minhquandinhcao@gmail.com
-  # OAuth client ID is public (it appears in every login redirect).
-  # The client SECRET lives in Infisical (online-judge-core-env).
   SOCIAL__GOOGLE_KEY: 15854195969-1d595g1fuu6fu6qabi0ht7952sm01tq4.apps.googleusercontent.com
   LOG__LEVEL: INFO
 
 envFrom:
-  - secretRef: { name: online-judge-core-env }   # synced from Infisical, see ../secrets/online-judge-core-env.yaml
+  - secretRef: { name: online-judge-core-env }
 
 podSecurityContext:
-  # Must match the owner of the existing media and problem directories on the
-  # dev VPS, or uploads fail with "Permission denied".
-  runAsUser: 1001      # `id -u tloi` on the dev VPS: owns /home/tloi/data/online-judge
-  runAsGroup: 1001     # `id -g tloi`
+  runAsUser: 1001
+  runAsGroup: 1001
   runAsNonRoot: true
-  # No fsGroup, on purpose: kubelet would recursively chown the existing media
-  # and problem directories on every mount.
 
 volumes:
   - name: media

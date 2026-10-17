@@ -9,7 +9,6 @@ helmCharts:
     namespace: online-judge
     releaseName: online-judge-media
     valuesFile: values.yaml
-# Hash-suffixed name: editing nginx.conf changes the pod spec, so it rolls.
 configMapGenerator:
   - name: online-judge-media-nginx
     files: [default.conf=nginx.conf]

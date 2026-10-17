@@ -1,18 +1,16 @@
-# websocket/daemon.js — live submission and contest updates.
-# Exactly one replica: the message queue lives in memory.
 image:
   repository: ghcr.io/tloi-dalat/oj-wsevent
   tag: main-ddcd076
 replicaCount: 1
 strategy: { type: Recreate }
 ports:
-  - { name: ws, containerPort: 15100 }     # browsers   ← cloudflared /event/
-  - { name: post, containerPort: 15101 }   # site posts events (cluster-internal)
-  - { name: poll, containerPort: 15102 }   # long-poll  ← cloudflared /channels/
+  - { name: ws, containerPort: 15100 }
+  - { name: post, containerPort: 15101 }
+  - { name: poll, containerPort: 15102 }
 probes:
   readiness: { tcpSocket: { port: poll }, periodSeconds: 10 }
   liveness: { tcpSocket: { port: poll }, periodSeconds: 20, failureThreshold: 6 }
-podSecurityContext: { runAsUser: 1000, runAsGroup: 1000, runAsNonRoot: true }   # `node` user in the image
+podSecurityContext: { runAsUser: 1000, runAsGroup: 1000, runAsNonRoot: true }
 resources:
   requests: { cpu: 20m, memory: 64Mi }
   limits: { cpu: 250m, memory: 192Mi }

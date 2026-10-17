@@ -12,13 +12,11 @@ helmCharts:
 configMapGenerator:
   - name: online-judge-judge-config
     files: [judge.yml]
-# Restart the pods when Infisical changes a secret they read (the operator
-# watches workloads carrying this annotation).
 patches:
   - target: { group: apps, kind: Deployment|StatefulSet }
     patch: |-
       apiVersion: apps/v1
-      kind: Deployment   # ignored: `target` picks the resources
+      kind: Deployment
       metadata:
         name: any
         annotations:

@@ -1,4 +1,3 @@
-# Pre-created volumes only: nothing here provisions or deletes disks.
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:

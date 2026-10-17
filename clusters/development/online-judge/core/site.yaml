@@ -1,12 +1,9 @@
-# gunicorn (the image's default command).
 replicaCount: 2
 strategy:
   type: RollingUpdate
   rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
 ports:
   - { name: http, containerPort: 8000 }
-# TCP, not HTTP: kubelet probes send the pod IP as Host, which ALLOWED_HOSTS
-# rejects with a 400 (dev plan §4.3).
 probes:
   readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
   liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6 }
@@ -14,8 +11,6 @@ resources:
   requests: { cpu: 200m, memory: 384Mi }
   limits: { cpu: "1", memory: 768Mi }
 
-# PreSync hook: `migrate` runs to completion before site, bridge or celery
-# update. On failure the sync stops and the old pods keep serving.
 migrate:
   enabled: true
   command: ["python", "manage.py", "migrate", "--noinput"]
