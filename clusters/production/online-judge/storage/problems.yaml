@@ -17,7 +17,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-static
   local:
-    path: /CHANGEME/online-judge/problems   # existing directory on the production VPS (must exist)
+    path: /home/tloi/data/online-judge/problems
   nodeAffinity:
     required:
       nodeSelectorTerms:

@@ -1,0 +1,13 @@
+# Copy to /etc/mysql/mariadb.conf.d/60-tloj.cnf on the production VPS, then
+#   sudo systemctl restart mariadb      (a few seconds; the old site reconnects)
+# Files later in the directory win, so this overrides 50-server.cnf's bind-address.
+[mysqld]
+# Pods reach the host at 10.42.0.1, which only exists once k3s runs, so listen
+# everywhere. Accounts decide who gets in: dmoj_k8s only from 10.42.x.x
+# (mysql-k8s-user.sql), the old site's dmoj and root only on localhost.
+bind-address            = 0.0.0.0
+# 128 MB was the default; the box has 32 GiB now and the database is ~0.4 GB.
+innodb_buffer_pool_size = 1G
+# NOT skip-name-resolve (unlike dev): the old site logs in as dmoj@localhost
+# over TCP to 127.0.0.1, and without name resolution that connection may no
+# longer match the 'localhost' account. Add it once the old stack is gone.

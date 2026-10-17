@@ -11,8 +11,8 @@ probes:
   readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
   liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6 }
 podSecurityContext:
-  runAsUser: 1001      # CHANGEME: same UID as core/values.yaml (must read the media files)
-  runAsGroup: 1001     # CHANGEME
+  runAsUser: 1001      # same UID as core/values.yaml (must read the media files)
+  runAsGroup: 1001
   runAsNonRoot: true
 volumes:
   - name: media

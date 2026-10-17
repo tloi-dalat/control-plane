@@ -3,7 +3,7 @@
 # PRODUCTION: same release tag as ../core/values.yaml (both come from tloi-dalat/TLOJ).
 image:
   repository: ghcr.io/tloi-dalat/oj-wsevent
-  tag: CHANGEME        # a release tag, e.g. 0.1.0
+  tag: 0.1.0
 replicaCount: 1
 strategy: { type: Recreate }
 ports:
