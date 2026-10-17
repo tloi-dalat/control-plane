@@ -1,6 +1,3 @@
-# Media and problem data stay where the old supervisor stack keeps them on the
-# production VPS (/home/tloi/media, /home/tloi/problem_data): no copy, nothing to
-# sync at cutover. Retain, never pruned. Back them up: nothing regenerates them.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

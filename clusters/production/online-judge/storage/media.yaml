@@ -1,9 +1,3 @@
-# User uploads (MEDIA_ROOT): martor images, PDF statements, submission files. Nothing regenerates these — they are what the daily backup exists for.
-#
-# SAFETY: persistentVolumeReclaimPolicy Retain + Prune=false/Delete=false.
-# The ApplicationSet prunes; without these, a renamed directory or a bad revert
-# could delete the volume. With them, the worst case is an unbound volume you
-# reattach by hand — the files are never touched.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -13,7 +7,7 @@ metadata:
 spec:
   capacity:
     storage: 50Gi
-  accessModes: [ReadWriteOnce]       # one node; several pods on it may mount it
+  accessModes: [ReadWriteOnce]
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-static
   local:
@@ -32,7 +26,7 @@ metadata:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   storageClassName: local-static
-  volumeName: online-judge-prd-media                # bind to exactly this volume
+  volumeName: online-judge-prd-media
   accessModes: [ReadWriteOnce]
   resources:
     requests:

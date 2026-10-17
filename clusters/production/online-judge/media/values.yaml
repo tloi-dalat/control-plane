@@ -1,6 +1,3 @@
-# Serves user uploads read-only from the media volume. cloudflared sends
-# /martor/ /pdf/ /submission_file/ /static-upload/ here (the URL prefixes in
-# dmoj/settings.py); everything else goes to Django.
 image:
   repository: nginxinc/nginx-unprivileged
   tag: 1.29.8-alpine
@@ -11,7 +8,7 @@ probes:
   readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
   liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6 }
 podSecurityContext:
-  runAsUser: 1001      # same UID as core/values.yaml (must read the media files)
+  runAsUser: 1001
   runAsGroup: 1001
   runAsNonRoot: true
 volumes:

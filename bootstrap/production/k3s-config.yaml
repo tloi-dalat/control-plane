@@ -1,26 +1,11 @@
-# Copy to /etc/rancher/k3s/config.yaml on the production VPS BEFORE installing k3s.
 write-kubeconfig-mode: "0600"
 disable:
-  - traefik     # no ingress controller: cloudflared routes straight to Services
-  - servicelb   # nothing uses type: LoadBalancer; no public ports
-# One node: route pod traffic directly instead of VXLAN, so k3s never opens
-# UDP 8472 on a VPS that has no firewall in front of it.
+  - traefik
+  - servicelb
 flannel-backend: host-gw
 node-label:
-  - tloi.vn/data-node=true   # media/problem volumes are pinned to this node
-# Keep k3s's embedded NetworkPolicy controller ON (the default) — it is what
-# confines the judge. Never add `disable-network-policy: true`.
-# The VPS uses systemd-resolved (nameserver 127.0.0.53). Pods can't reach the
-# host's loopback, so CoreDNS would forward to itself and loop: give it the
-# real upstream servers instead.
+  - tloi.vn/data-node=true
 resolv-conf: /run/systemd/resolve/resolv.conf
-# Docker runs on this VPS too (mailcow, CTF challenges). Its networks use
-# 10.100–10.102.x, 172.x and 192.168.x: no overlap with k3s's defaults
-# (pods 10.42.0.0/16, services 10.43.0.0/16). Keep it that way: never give
-# Docker an address pool that covers 10.42/16 or 10.43/16.
 kubelet-arg:
-  # The VPS (32 GiB) also runs MariaDB, mailcow, CTF containers and the OS
-  # outside Kubernetes. Reserve their memory so the scheduler doesn't hand it
-  # to pods; raise it if they grow.
   - system-reserved=memory=8Gi
   - kube-reserved=memory=512Mi

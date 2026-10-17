@@ -1,7 +1,3 @@
-# One ArgoCD Application per directory clusters/development/<namespace>/<app>:
-#   clusters/development/online-judge/core     → Application "online-judge-core", namespace online-judge
-#   clusters/development/quiz/web    → Application "quiz-web",  namespace quiz   (later: just add the directory)
-# Applied once by hand at bootstrap; everything after is a git commit.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -12,13 +8,11 @@ spec:
   goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/development/argocd/repo-credentials.example.yaml)
+        repoURL: https://github.com/tloi-dalat/control-plane.git
         revision: main
         directories:
           - path: clusters/development/*/*
   syncPolicy:
-    # Deleting this ApplicationSet must never take the workloads (or volumes)
-    # down with it.
     preserveResourcesOnDeletion: true
   template:
     metadata:
@@ -28,7 +22,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/tloi-dalat/control-plane.git   # ArgoCD reads it with the GitHub App credential (bootstrap/development/argocd/repo-credentials.example.yaml)
+        repoURL: https://github.com/tloi-dalat/control-plane.git
         targetRevision: main
         path: '{{ .path.path }}'
       destination:
@@ -38,8 +32,6 @@ spec:
         automated:
           prune: true
           selfHeal: true
-        # Apps come up in any order (e.g. the migrate hook before the secrets
-        # exist); retries let it converge instead of failing once.
         retry:
           limit: 10
           backoff: { duration: 30s, factor: 2, maxDuration: 10m }

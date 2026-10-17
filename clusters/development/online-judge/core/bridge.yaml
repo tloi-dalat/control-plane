@@ -1,5 +1,3 @@
-# Judges connect to :9999, the site to :9998. Exactly one bridge: every judge
-# and every site pod must reach the same one, so no overlap during rollout.
 replicaCount: 1
 strategy: { type: Recreate }
 command: ["python", "manage.py", "runbridged"]
@@ -12,7 +10,6 @@ probes:
 resources:
   requests: { cpu: 50m, memory: 192Mi }
   limits: { cpu: 500m, memory: 384Mi }
-# Problem data read-only (as upstream VNOJ mounts it); no media.
 volumes:
   - name: problems
     persistentVolumeClaim: { claimName: online-judge-problems, readOnly: true }
