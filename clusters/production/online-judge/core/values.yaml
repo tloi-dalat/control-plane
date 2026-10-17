@@ -16,9 +16,7 @@ env:
   ENV: prd
   # Everything URL-shaped derives from this one value. It must also be a
   # hostname in terraform-cloudflare's control-plane-production.yaml.
-  # REHEARSAL: oj-k8s.tloi.vn while the old stack still serves oj.tloi.vn.
-  # CUTOVER: set oj.tloi.vn (bootstrap/production/README.md, "Cutover").
-  SITE__DOMAIN: oj-k8s.tloi.vn
+  SITE__DOMAIN: oj.tloi.vn
   SITE__NAME: TLOJ
   DJANGO__DEBUG: "false"
   DJANGO__REGISTRATION_OPEN: "true"
@@ -29,9 +27,7 @@ env:
   # only node). Its config: bootstrap/production/60-tloj.cnf.
   MYSQL__HOST: "10.42.0.1"
   MYSQL__PORT: "3306"
-  # REHEARSAL: a copy of the live database, so migrations run on a copy while
-  # the old stack keeps using `dmoj`. CUTOVER: set dmoj.
-  MYSQL__DATABASE: dmoj_rehearsal
+  MYSQL__DATABASE: dmoj
   MYSQL__USER: dmoj_k8s
   REDIS__HOST: online-judge-redis
   REDIS__CACHE_DB: "1"
