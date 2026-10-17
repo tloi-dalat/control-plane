@@ -20,7 +20,7 @@ kind: StatefulSet            # pods online-judge-judge-0, -1, …; they register
 replicaCount: 5
 image:
   repository: ghcr.io/tloi-dalat/oj-judge
-  tag: CHANGEME        # a release tag, e.g. 0.1.0
+  tag: 0.1.0
 args: ["run", "-c", "/config/judge.yml", "online-judge-bridge", "$(JUDGE__NAME)", "$(JUDGE__KEY)"]
 env:
   # The image already contains an installed judge; skip the entrypoint's
