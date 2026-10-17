@@ -40,3 +40,15 @@ patches:
         name: any
         annotations:
           secrets.infisical.com/auto-reload: "true"
+  - target: { group: apps, kind: Deployment }
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment   # ignored: `target` picks the resources
+      metadata:
+        name: any
+      spec:
+        template:
+          spec:
+            hostAliases:
+              - ip: 10.42.0.1
+                hostnames: [mail.tloi.vn]
