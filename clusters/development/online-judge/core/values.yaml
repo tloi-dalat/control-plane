@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/tloi-dalat/oj-core
-  tag: main-192ad87
+  tag: main-4625baf
 
 env:
   ENV: dev
