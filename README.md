@@ -11,11 +11,12 @@ clusters/<env>/
   cloudflared/tunnel/    tunnel connector
   infisical/             secrets operator and its login
   online-judge/          core (site, bridge, celery), wsevent, judge, media, redis, storage, secrets
+  database/              mariadb-operator, mariadb
+  sqllab/                dbgate
 bootstrap/               one-time cluster setup files
 docs/
   setup.md               set up a new VPS (development or production)
-  operations.md          deploy, release, configure, scale
-  design.md              why things are the way they are
+  operations.md          deploy, configure, scale, database, SQL Lab
 ```
 
 Rules: no secrets in git; pin chart versions and image tags; review any change to `storage/`.

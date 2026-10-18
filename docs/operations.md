@@ -23,6 +23,7 @@ runs in each environment; its **Releases** tab has the images and the values to 
 | Add a hostname | PR to `terraform-cloudflare` (`zero-trust/tunnel/tunnels/control-plane-<env>.yaml`) |
 | Add a service | Add `clusters/<env>/<namespace>/<app>/`; the ApplicationSet creates the app `<namespace>-<app>` |
 | Change chart options | Every app uses `oci://ghcr.io/tloi-dalat/charts/app`, pinned in its `kustomization.yaml` |
+| Change k3s settings | `bootstrap/<env>/k3s-config.yaml` → `/etc/rancher/k3s/config.yaml`, restart k3s. Never `disable-network-policy`: it confines the judges |
 
 ## Scale
 
@@ -30,6 +31,7 @@ runs in each environment; its **Releases** tab has the images and the values to 
 - Judges: change `replicaCount` in `judge/values.yaml` and register or remove `judge-<n>` in the site admin.
   Keep it within the cores the VPS can spare, or time limits get unfair.
 - Bridge, wsevent and redis stay at one replica.
+- Judges: `JUDGE__INDEX` must sort before `JUDGE__NAME` in `env` (the chart sorts env by name).
 
 ## Look around
 
@@ -41,7 +43,38 @@ kubectl -n online-judge logs job/online-judge-site-migrate
 kubectl -n argocd annotate application <app> argocd.argoproj.io/refresh=hard --overwrite   # sync now
 ```
 
+## Database
+
+Development: mariadb-operator in `clusters/development/database/` (`mariadb-operator/`, `mariadb/`). Apps write to
+`mariadb-primary.database.svc.cluster.local`; SQL Lab reads `mariadb-secondary` (the replica). Production: MariaDB on
+the host, `10.42.0.1`.
+
+| Task | How |
+|---|---|
+| Root shell | `kubectl -n database exec -it mariadb-0 -c mariadb -- mariadb -uroot -p` |
+| Replication status | `kubectl -n database get mariadb mariadb -o jsonpath='{.status.replication}'` |
+| Add an app database | Copy `mariadb/online-judge.yaml` (Database, User, Grant), add its password key to `/database/mariadb` |
+| Remove one | Delete its file. Databases and users have `cleanupPolicy: Skip`: drop them by hand if you mean it |
+| Change server settings | `myCnf` in `mariadb.yaml`; the operator restarts the replica, then the primary |
+| Upgrade MariaDB | `image` in `mariadb.yaml`, same order |
+| Upgrade the operator | Both chart versions in `mariadb-operator/`, after reading its release notes. Its CRDs are never pruned |
+| Switch primary | `replication.primary.podIndex` in `mariadb.yaml` |
+| Restore | A `Restore` with `backupRef: { name: daily }`; it overwrites the live tables |
+| PostgreSQL | `database/cnpg/` (operator, CRDs included) and `database/postgres/` |
+
+## SQL Lab
+
+`sqllab.tloi.shop` (development): DbGate on the replica as read-only user `sqllab`, behind Cloudflare Access.
+
+| Task | How |
+|---|---|
+| Allow an email | terraform-cloudflare, `control-plane-<env>.yaml` → `access.<hostname>.emails` |
+| Show another database | A `Grant` like `sqllab-online-judge` in `database/mariadb/sqllab.yaml` |
+
 ## Data
 
-Media and problem data live in `/home/tloi/data/online-judge` on the node; the database runs on the host.
-Back up both. The volumes are never deleted by ArgoCD, but review any PR that touches `storage/`.
+- Media and problem data: `/home/tloi/data/online-judge`. Development database: `/home/tloi/data/database`, backed
+  up daily to R2 (`backup.yaml`). Production database: on the host, back it up separately.
+- Volumes are local PVs ArgoCD never deletes. A PV's path can't change; moving data means a new PV and PVC. Review
+  any PR that touches `storage/`.
+- No secrets in git: values live in Infisical, this repo only maps folders to Secrets.

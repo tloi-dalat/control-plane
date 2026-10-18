@@ -1,7 +1,7 @@
 # Set up a new VPS
 
-Builds a cluster for `development` or `production` on a fresh VPS (Ubuntu 24.04). Everything runs on one node;
-MySQL/MariaDB stays on the host, outside Kubernetes.
+Builds a cluster for `development` or `production` on a fresh VPS (Ubuntu 24.04). Everything runs on one node.
+The database runs in the cluster on development (`operations.md` § Database) and on the host on production.
 
 | | development | production |
 |---|---|---|
@@ -18,12 +18,18 @@ Pinned versions: k3s `v1.36.5+k3s1`, ArgoCD `v3.5.3`.
 id tloi                                   # uid/gid must be 1001 (runAsUser in core/ and media/ values.yaml)
 sudo mkdir -p /home/tloi/data/online-judge/{media,problems}
 sudo chown -R 1001:1001 /home/tloi/data
+# development only:
+sudo install -d -o 999 -g 999 /home/tloi/data/database/mariadb-{0,1}
+sudo install -d /home/tloi/data/sqllab/dbgate
 git clone https://github.com/tloi-dalat/control-plane.git ~/control-plane && cd ~/control-plane
 ```
 
 Moving from another server: copy `media` and `problems` into those directories first.
 
 ## 2. Database
+
+Production only. Development runs MariaDB in the cluster: skip to § 3, and after § 5 restore the latest backup
+with a `Restore` (`operations.md` § Database).
 
 Install MariaDB (or MySQL), create the `dmoj` database, or restore a dump into it.
 
@@ -104,8 +110,11 @@ In Infisical (project TLOI, environment `<env>`):
 |---|---|
 | `/online-judge/core` | `DJANGO__SECRET_KEY`, `MYSQL__PASSWORD`, `REDIS__PASSWORD`, `SOCIAL__GOOGLE_SECRET`, `EVENT__SUBMISSION_KEY`, `EVENT__CONTEST_KEY`, `EVENT__TICKET_KEY`; production also `MAIL__PASSWORD`, `POLYGON__API_KEY`, `POLYGON__API_SECRET`, `MOSS__API_KEY`, `DISCORD__*` |
 | `/online-judge/judge` | `JUDGE__KEY` |
+| `/database/mariadb` (development) | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/core` → `MYSQL__PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
+| `/sqllab/dbgate` (development) | `PASSWORD_replica` (= `SQLLAB_PASSWORD`) |
 
 - A brand-new environment: `bootstrap/new-app-secrets.sh` prints random values.
+- Keys that must equal another key: use an Infisical reference (`${/online-judge/core.MYSQL__PASSWORD}`).
 - Moving an existing environment: keep its values. A new `DJANGO__SECRET_KEY` logs everyone out and breaks stored 2FA.
 
 Give the cluster its Infisical login (machine identity `tloi-<env>`, Viewer on the project):
