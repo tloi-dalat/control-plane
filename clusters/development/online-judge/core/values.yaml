@@ -8,10 +8,10 @@ env:
   SITE__NAME: TLOJ
   DJANGO__DEBUG: "false"
   DJANGO__REGISTRATION_OPEN: "false"
-  MYSQL__HOST: "10.42.0.1"
+  MYSQL__HOST: mariadb-primary.database.svc.cluster.local
   MYSQL__PORT: "3306"
-  MYSQL__DATABASE: dmoj
-  MYSQL__USER: dmoj_k8s
+  MYSQL__DATABASE: online_judge
+  MYSQL__USER: online_judge
   REDIS__HOST: online-judge-redis
   REDIS__CACHE_DB: "1"
   REDIS__CELERY_DB: "2"
