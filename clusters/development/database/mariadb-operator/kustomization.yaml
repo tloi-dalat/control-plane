@@ -8,6 +8,7 @@ helmCharts:
     version: 26.10.1
     namespace: database
     releaseName: mariadb-operator-crds
+    valuesFile: crds.yaml
   - repo: oci://ghcr.io/mariadb-operator/charts
     name: mariadb-operator
     version: 26.10.1
