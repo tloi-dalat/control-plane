@@ -1,0 +1,21 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: daily
+spec:
+  mariaDbRef: { name: mariadb }
+  schedule:
+    cron: "17 20 * * *"
+  timeZone: UTC
+  maxRetention: 720h
+  compression: gzip
+  storage:
+    s3:
+      bucket: tloi-backups
+      prefix: development/mariadb
+      endpoint: <ACCOUNT_ID>.r2.cloudflarestorage.com
+      region: auto
+      accessKeyIdSecretKeyRef: { name: database-mariadb-env, key: R2_ACCESS_KEY_ID }
+      secretAccessKeySecretKeyRef: { name: database-mariadb-env, key: R2_SECRET_ACCESS_KEY }
+      tls:
+        enabled: true
