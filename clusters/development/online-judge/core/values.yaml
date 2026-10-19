@@ -3,26 +3,24 @@ image:
   tag: main-4625baf
 
 env:
-  ENV: dev
-  SITE__DOMAIN: oj.tloi.shop
-  SITE__NAME: TLOJ
-  DJANGO__DEBUG: "false"
-  DJANGO__REGISTRATION_OPEN: "false"
-  MYSQL__HOST: mariadb-primary.database.svc.cluster.local
-  MYSQL__PORT: "3306"
-  MYSQL__DATABASE: online_judge
-  MYSQL__USER: online_judge
-  REDIS__HOST: online-judge-redis
-  REDIS__CACHE_DB: "1"
-  REDIS__CELERY_DB: "2"
-  PROBLEM__DATA_ROOT: /problems
-  MEDIA__ROOT: /media
-  BRIDGE__CONNECT_HOST: online-judge-bridge
-  EVENT__POST: ws://online-judge-wsevent:15101/
-  MAIL__BACKEND: django.core.mail.backends.console.EmailBackend
-  MAIL__ADMINS: kitsune:minhquandinhcao@gmail.com
-  SOCIAL__GOOGLE_KEY: 15854195969-1d595g1fuu6fu6qabi0ht7952sm01tq4.apps.googleusercontent.com
-  LOG__LEVEL: INFO
+  SITE_FULL_URL: https://oj.tloi.shop
+  SITE_NAME: TLOJ
+  DEBUG: "false"
+  REGISTRATION_OPEN: "false"
+  DATABASE_HOST: mariadb-primary.database.svc.cluster.local
+  DATABASE_PORT: "3306"
+  DATABASE_NAME: online_judge
+  DATABASE_USER: online_judge
+  REDIS_HOST: online-judge-redis
+  REDIS_CACHE_DB: "1"
+  REDIS_CELERY_DB: "2"
+  DMOJ_PROBLEM_DATA_ROOT: /problems
+  MEDIA_ROOT: /media
+  BRIDGED_DJANGO_CONNECT: online-judge-bridge:9998
+  EVENT_DAEMON_POST: ws://online-judge-wsevent:15101/
+  EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+  ADMINS: kitsune:minhquandinhcao@gmail.com
+  LOG_LEVEL: INFO
 
 envFrom:
   - secretRef: { name: online-judge-core-env }

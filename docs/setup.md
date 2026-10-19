@@ -108,14 +108,15 @@ In Infisical (project TLOI, environment `<env>`):
 
 | Folder | Keys |
 |---|---|
-| `/online-judge/core` | `DJANGO__SECRET_KEY`, `MYSQL__PASSWORD`, `REDIS__PASSWORD`, `SOCIAL__GOOGLE_SECRET`, `EVENT__SUBMISSION_KEY`, `EVENT__CONTEST_KEY`, `EVENT__TICKET_KEY`; production also `MAIL__PASSWORD`, `POLYGON__API_KEY`, `POLYGON__API_SECRET`, `MOSS__API_KEY`, `DISCORD__*` |
-| `/online-judge/judge` | `JUDGE__KEY` |
-| `/database/mariadb` (development) | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/core` → `MYSQL__PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
+| `/online-judge/core` | `SECRET_KEY`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET`, `EVENT_DAEMON_SUBMISSION_KEY`, `EVENT_DAEMON_CONTEST_KEY`, `EVENT_DAEMON_TICKET_KEY`; optional `FERNET_KEYS` (older keys for 2FA data); production also `EMAIL_HOST_PASSWORD`, `VNOJ_POLYGON_API_KEY`, `VNOJ_POLYGON_API_SECRET`, `MOSS_API_KEY`, `DISCORD_WEBHOOK_*` |
+| `/online-judge/judge` | `DMOJ_JUDGE_KEY` |
+| `/database/mariadb` (development) | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/core` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
 | `/sqllab/dbgate` (development) | `PASSWORD_replica` (= `SQLLAB_PASSWORD`) |
 
+- Keys are named after the Django setting they set (`.k8s.settings.py` in the site repo).
 - A brand-new environment: `bootstrap/new-app-secrets.sh` prints random values.
-- Keys that must equal another key: use an Infisical reference (`${/online-judge/core.MYSQL__PASSWORD}`).
-- Moving an existing environment: keep its values. A new `DJANGO__SECRET_KEY` logs everyone out and breaks stored 2FA.
+- Keys that must equal another key: use an Infisical reference (`${/online-judge/core.DATABASE_PASSWORD}`).
+- Moving an existing environment: keep its values. A new `SECRET_KEY` logs everyone out and breaks stored 2FA.
 
 Give the cluster its Infisical login (machine identity `tloi-<env>`, Viewer on the project):
 
@@ -140,7 +141,7 @@ kubectl -n online-judge get pods          # migrate Completed, everything else R
 Register `judge-0` … `judge-<n-1>` (n from the table above):
 
 ```bash
-KEY=$(kubectl -n online-judge get secret online-judge-judge-env -o jsonpath='{.data.JUDGE__KEY}' | base64 -d)
+KEY=$(kubectl -n online-judge get secret online-judge-judge-env -o jsonpath='{.data.DMOJ_JUDGE_KEY}' | base64 -d)
 kubectl -n online-judge exec deploy/online-judge-site -- env K="$KEY" N=5 python manage.py shell -c "
 import os; from judge.models import Judge
 for i in range(int(os.environ['N'])): Judge.objects.get_or_create(name=f'judge-{i}', defaults={'auth_key': os.environ['K']})"
@@ -170,7 +171,7 @@ GitHub → `control-plane` → Settings → Webhooks → Add: `https://<webhook 
 ## 8. Mail (production)
 
 The site sends through mailcow on the same host as `no-reply@tloi.vn` (an SMTP-only app password in
-`MAIL__PASSWORD`). Pods can't reach the VPS's public IP, so `core/kustomization.yaml` maps `mail.tloi.vn` to
+`EMAIL_HOST_PASSWORD`). Pods can't reach the VPS's public IP, so `core/kustomization.yaml` maps `mail.tloi.vn` to
 `10.42.0.1`. Mailcow needs:
 
 - `DISABLE_NETFILTER_ISOLATION_RULE=y` in `mailcow.conf`, or its firewall drops connections from pods.
@@ -181,9 +182,9 @@ Test from a pod:
 ```bash
 kubectl -n online-judge exec -i deploy/online-judge-site -- python - <<'PY'
 import os, smtplib, ssl
-s = smtplib.SMTP(os.environ['MAIL__HOST'], int(os.environ['MAIL__PORT']), timeout=10)
+s = smtplib.SMTP(os.environ['EMAIL_HOST'], int(os.environ['EMAIL_PORT']), timeout=10)
 s.ehlo(); s.starttls(context=ssl.create_default_context()); s.ehlo()
-s.login(os.environ['MAIL__USER'], os.environ['MAIL__PASSWORD']); print('login ok'); s.quit()
+s.login(os.environ['EMAIL_HOST_USER'], os.environ['EMAIL_HOST_PASSWORD']); print('login ok'); s.quit()
 PY
 ```
 

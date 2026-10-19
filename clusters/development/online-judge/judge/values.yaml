@@ -3,14 +3,14 @@ replicaCount: 1
 image:
   repository: ghcr.io/tloi-dalat/oj-judge
   tag: main-feba6cb
-args: ["run", "-c", "/config/judge.yml", "online-judge-bridge", "$(JUDGE__NAME)", "$(JUDGE__KEY)"]
+args: ["run", "-c", "/config/judge.yml", "online-judge-bridge"]
 env:
   DMOJ_SKIP_DEV_INSTALL: "1"
-  JUDGE__INDEX:
+  DMOJ_JUDGE_INDEX:
     valueFrom: { fieldRef: { fieldPath: "metadata.labels['apps.kubernetes.io/pod-index']" } }
-  JUDGE__NAME: judge-$(JUDGE__INDEX)
-  JUDGE__KEY:
-    valueFrom: { secretKeyRef: { name: online-judge-judge-env, key: JUDGE__KEY } }
+  DMOJ_JUDGE_KEY:
+    valueFrom: { secretKeyRef: { name: online-judge-judge-env, key: DMOJ_JUDGE_KEY } }
+  DMOJ_JUDGE_NAME: judge-$(DMOJ_JUDGE_INDEX)
 securityContext:
   allowPrivilegeEscalation: false
   capabilities: { add: ["SYS_PTRACE"] }
