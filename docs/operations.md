@@ -31,7 +31,7 @@ runs in each environment; its **Releases** tab has the images and the values to 
 - Judges: change `replicaCount` in `judge/values.yaml` and register or remove `judge-<n>` in the site admin.
   Keep it within the cores the VPS can spare, or time limits get unfair.
 - Bridge, wsevent and redis stay at one replica.
-- Judges: `JUDGE__INDEX` must sort before `JUDGE__NAME` in `env` (the chart sorts env by name).
+- Judges: `DMOJ_JUDGE_INDEX` must sort before `DMOJ_JUDGE_NAME` in `env` (the chart sorts env by name).
 
 ## Look around
 

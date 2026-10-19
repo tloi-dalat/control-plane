@@ -3,11 +3,11 @@ image:
   tag: 7.4.11-alpine
 replicaCount: 1
 strategy: { type: Recreate }
-args: ["--requirepass", "$(REDIS__PASSWORD)", "--save", "", "--appendonly", "no",
+args: ["--requirepass", "$(REDIS_PASSWORD)", "--save", "", "--appendonly", "no",
        "--maxmemory", "256mb", "--maxmemory-policy", "volatile-lru"]
 env:
-  REDIS__PASSWORD:
-    valueFrom: { secretKeyRef: { name: online-judge-core-env, key: REDIS__PASSWORD } }
+  REDIS_PASSWORD:
+    valueFrom: { secretKeyRef: { name: online-judge-core-env, key: REDIS_PASSWORD } }
 ports:
   - { name: redis, containerPort: 6379 }
 probes:
