@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/tloi-dalat/oj-wsevent
-  tag: main-02cf566
+  tag: main-e307d4b
 replicaCount: 1
 strategy: { type: Recreate }
 ports:
