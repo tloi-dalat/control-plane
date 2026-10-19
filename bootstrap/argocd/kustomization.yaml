@@ -12,3 +12,11 @@ patches:
         name: argocd-cm
       data:
         kustomize.buildOptions: --enable-helm
+        users.anonymous.enabled: "true"
+  - patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: argocd-rbac-cm
+      data:
+        policy.default: role:readonly
