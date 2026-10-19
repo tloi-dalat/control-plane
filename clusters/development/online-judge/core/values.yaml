@@ -4,6 +4,7 @@ image:
 
 env:
   SITE_FULL_URL: https://oj.tloi.shop
+  DMOJ_CANONICAL: oj.tloi.shop
   SITE_NAME: TLOJ
   DEBUG: "false"
   REGISTRATION_OPEN: "false"
