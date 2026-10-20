@@ -1,4 +1,4 @@
-orgAllowlist: github.com/tloi-dalat/terraform-cloudflare
+orgAllowlist: github.com/tloi-dalat/terraform-cloudflare,github.com/tloi-dalat/terraform-github
 atlantisUrl: https://atlantis.tloi.vn
 
 image:
@@ -43,7 +43,7 @@ environment:
 
 repoConfig: |
   repos:
-    - id: github.com/tloi-dalat/terraform-cloudflare
+    - id: /.*/
       apply_requirements: [approved, mergeable, undiverged]
       import_requirements: [approved, mergeable, undiverged]
       allowed_overrides: []
