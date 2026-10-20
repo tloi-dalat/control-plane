@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: platform-prd-atlantis
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-static
+  local:
+    path: /home/tloi/data/platform/atlantis
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - { key: tloi.vn/data-node, operator: In, values: ["true"] }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: atlantis
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  storageClassName: local-static
+  volumeName: platform-prd-atlantis
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 5Gi

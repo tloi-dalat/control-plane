@@ -1,0 +1,58 @@
+orgAllowlist: github.com/tloi-dalat/terraform-cloudflare,github.com/tloi-dalat/terraform-github
+atlantisUrl: https://atlantis.tloi.vn
+
+image:
+  repository: ghcr.io/runatlantis/atlantis
+  tag: v0.48.1
+  pullPolicy: IfNotPresent
+
+defaultTFVersion: v1.16.5
+hidePrevPlanComments: true
+
+service:
+  type: ClusterIP
+
+statefulSet:
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+
+serviceAccount:
+  mount: false
+
+volumeClaim:
+  enabled: false
+extraVolumes:
+  - name: atlantis-data
+    persistentVolumeClaim: { claimName: atlantis }
+extraVolumeMounts:
+  - { name: atlantis-data, mountPath: /atlantis-data }
+
+loadEnvFromSecrets:
+  - platform-atlantis-env
+
+environment:
+  ATLANTIS_GH_APP_SLUG: tloi-atlantis
+  ATLANTIS_WRITE_GIT_CREDS: "true"
+  ATLANTIS_GH_TEAM_ALLOWLIST: sre:plan,sre:apply,sre:unlock,sre:import,sre:state,swe:plan,swe:apply,swe:unlock,swe:import
+  ATLANTIS_DISABLE_AUTOPLAN: "true"
+  ATLANTIS_AUTOMERGE: "true"
+  ATLANTIS_AUTOMERGE_METHOD: squash
+  ATLANTIS_CHECKOUT_STRATEGY: merge
+  ATLANTIS_GH_ALLOW_MERGEABLE_BYPASS_APPLY: "true"
+  INFISICAL_AUTH_METHOD: universal
+
+repoConfig: |
+  repos:
+    - id: /.*/
+      apply_requirements: [approved, mergeable, undiverged]
+      import_requirements: [approved, mergeable, undiverged]
+      allowed_overrides: []
+      allow_custom_workflows: false
+      delete_source_branch_on_merge: true
+
+resources:
+  requests: { cpu: 100m, memory: 256Mi }
+  limits: { memory: 1Gi }
+
+test:
+  enabled: false
