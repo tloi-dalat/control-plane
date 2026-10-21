@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: sqllab-dev-dbgate
+  name: platform-dev-sqllab
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
@@ -11,7 +11,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-static
   local:
-    path: /home/tloi/data/sqllab/dbgate
+    path: /home/tloi/data/platform/sqllab
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -21,12 +21,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: dbgate
+  name: sqllab
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   storageClassName: local-static
-  volumeName: sqllab-dev-dbgate
+  volumeName: platform-dev-sqllab
   accessModes: [ReadWriteOnce]
   resources:
     requests:

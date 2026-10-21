@@ -12,7 +12,7 @@ clusters/<env>/
   infisical/             secrets operator and its login
   online-judge/          core (site, bridge, celery), wsevent, judge, media, redis, storage, secrets
   database/              mariadb-operator, mariadb
-  sqllab/                dbgate
+  platform/              sqllab (DbGate, development), atlantis (production)
 bootstrap/               one-time cluster setup files
 docs/
   setup.md               set up a new VPS (development or production)

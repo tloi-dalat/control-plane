@@ -9,8 +9,8 @@ helmCharts:
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
     version: 0.2.0
-    namespace: sqllab
-    releaseName: dbgate
+    namespace: platform
+    releaseName: sqllab
     valuesFile: values.yaml
 patches:
   - target: { group: apps, kind: Deployment|StatefulSet }

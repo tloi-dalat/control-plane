@@ -12,7 +12,7 @@ env:
   USER_replica: sqllab
   READONLY_replica: "1"
 envFrom:
-  - secretRef: { name: sqllab-dbgate-env }
+  - secretRef: { name: platform-sqllab-env }
 ports:
   - { name: http, containerPort: 3000 }
 probes:
@@ -23,7 +23,7 @@ resources:
   limits: { cpu: 500m, memory: 512Mi }
 volumes:
   - name: data
-    persistentVolumeClaim: { claimName: dbgate }
+    persistentVolumeClaim: { claimName: sqllab }
 volumeMounts:
   - { name: data, mountPath: /root/.dbgate }
 networkPolicy:
