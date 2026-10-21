@@ -20,7 +20,7 @@ sudo mkdir -p /home/tloi/data/online-judge/{media,problems}
 sudo chown -R 1001:1001 /home/tloi/data
 # development only:
 sudo install -d -o 999 -g 999 /home/tloi/data/database/mariadb-{0,1}
-sudo install -d /home/tloi/data/sqllab/dbgate
+sudo install -d /home/tloi/data/platform/sqllab
 git clone https://github.com/tloi-dalat/control-plane.git ~/control-plane && cd ~/control-plane
 ```
 
@@ -111,7 +111,7 @@ In Infisical (project TLOI, environment `<env>`):
 | `/online-judge/core` | `SECRET_KEY`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET`, `EVENT_DAEMON_SUBMISSION_KEY`, `EVENT_DAEMON_CONTEST_KEY`, `EVENT_DAEMON_TICKET_KEY`; optional `FERNET_KEYS` (older keys for 2FA data); production also `EMAIL_HOST_PASSWORD`, `VNOJ_POLYGON_API_KEY`, `VNOJ_POLYGON_API_SECRET`, `MOSS_API_KEY`, `DISCORD_WEBHOOK_*` |
 | `/online-judge/judge` | `DMOJ_JUDGE_KEY` |
 | `/database/mariadb` (development) | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/core` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
-| `/sqllab/dbgate` (development) | `PASSWORD_replica` (= `SQLLAB_PASSWORD`) |
+| `/platform/sqllab` (development) | `PASSWORD_replica` (= `SQLLAB_PASSWORD`) |
 
 - Keys are named after the Django setting they set (`.k8s.settings.py` in the site repo).
 - A brand-new environment: `bootstrap/new-app-secrets.sh` prints random values.
