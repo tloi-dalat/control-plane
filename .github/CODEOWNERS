@@ -1,3 +1,4 @@
-*           @tloi-dalat/sre @tloi-dalat/swe
-/.github/   @tloi-dalat/sre
-/bootstrap/ @tloi-dalat/sre
+*                                  @tloi-dalat/sre
+/clusters/*/online-judge/core/     @tloi-dalat/sre @tloi-dalat/swe
+/clusters/*/online-judge/judge/    @tloi-dalat/sre @tloi-dalat/swe
+/clusters/*/online-judge/wsevent/  @tloi-dalat/sre @tloi-dalat/swe
