@@ -8,10 +8,10 @@ env:
   DEBUG: "false"
   REGISTRATION_OPEN: "true"
   OAUTH_ONLY: "true"
-  DATABASE_HOST: "10.42.0.1"
+  DATABASE_HOST: mariadb-primary.database.svc.cluster.local
   DATABASE_PORT: "3306"
-  DATABASE_NAME: dmoj
-  DATABASE_USER: dmoj_k8s
+  DATABASE_NAME: online_judge
+  DATABASE_USER: online_judge
   REDIS_HOST: online-judge-redis
   REDIS_CACHE_DB: "1"
   REDIS_CELERY_DB: "2"
