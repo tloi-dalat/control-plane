@@ -7,6 +7,8 @@ The database runs in the cluster on development (`operations.md` § Database) an
 |---|---|---|
 | Site | `oj.tloi.shop` | `oj.tloi.vn` |
 | Webhook host | `argocd-hook.tloi.shop` | `argocd-hook.tloi.vn` |
+| ArgoCD UI | `argocd.tloi.shop` | `argocd.tloi.vn` |
+| SQL Lab | `sqllab.tloi.shop` | `sqllab.tloi.vn` |
 | k3s config | `bootstrap/development/k3s-config.yaml` | `bootstrap/production/k3s-config.yaml` |
 | Judges | 1 | 5 |
 
@@ -18,10 +20,8 @@ Pinned versions: k3s `v1.36.5+k3s1`, ArgoCD `v3.5.3`.
 id tloi                                   # uid/gid must be 1001 (runAsUser in core/ and media/ values.yaml)
 sudo mkdir -p /home/tloi/data/online-judge/{media,problems}
 sudo chown -R 1001:1001 /home/tloi/data
-# development only:
 sudo install -d -o 999 -g 999 /home/tloi/data/database/mariadb-{0,1}
 sudo install -d /home/tloi/data/platform/sqllab
-git clone https://github.com/tloi-dalat/control-plane.git ~/control-plane && cd ~/control-plane
 ```
 
 Moving from another server: copy `media` and `problems` into those directories first.
@@ -87,8 +87,9 @@ kubectl -n argocd rollout status deploy/argocd-repo-server
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
 ```
 
-The UI is never public. Reach it over SSH: `ssh -L 8080:localhost:8080 <vps>`, then on the VPS
-`kubectl -n argocd port-forward svc/argocd-server 8080:443`, and open https://localhost:8080 as `admin`.
+The UI (table above) is read-only for anyone Cloudflare Access lets in. To change things, log in as `admin`
+over SSH: `ssh -L 8080:localhost:8080 <vps>`, then on the VPS
+`kubectl -n argocd port-forward svc/argocd-server 8080:443`, and open https://localhost:8080.
 Change the password, then delete `argocd-initial-admin-secret`.
 
 If `control-plane` is private, add it under Settings → Repositories (GitHub App credentials).
@@ -110,8 +111,8 @@ In Infisical (project TLOI, environment `<env>`):
 |---|---|
 | `/online-judge/core` | `SECRET_KEY`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET`, `EVENT_DAEMON_SUBMISSION_KEY`, `EVENT_DAEMON_CONTEST_KEY`, `EVENT_DAEMON_TICKET_KEY`; optional `FERNET_KEYS` (older keys for 2FA data); production also `EMAIL_HOST_PASSWORD`, `VNOJ_POLYGON_API_KEY`, `VNOJ_POLYGON_API_SECRET`, `MOSS_API_KEY`, `DISCORD_WEBHOOK_*` |
 | `/online-judge/judge` | `DMOJ_JUDGE_KEY` |
-| `/database/mariadb` (development) | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/core` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
-| `/platform/sqllab` (development) | `PASSWORD_replica` (= `SQLLAB_PASSWORD`) |
+| `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/core` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
+| `/platform/sqllab` | `PASSWORD_replica` (= `SQLLAB_PASSWORD`) |
 
 - Keys are named after the Django setting they set (`.k8s.settings.py` in the site repo).
 - A brand-new environment: `bootstrap/new-app-secrets.sh` prints random values.

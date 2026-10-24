@@ -64,11 +64,12 @@ the host, `10.42.0.1`.
 
 ## SQL Lab
 
-`sqllab.tloi.shop` (development): DbGate on the replica as read-only user `sqllab`, behind Cloudflare Access.
+`sqllab.tloi.shop` / `sqllab.tloi.vn`: DbGate on the replica as read-only user `sqllab`, behind Cloudflare Access
+. `argocd.tloi.shop` / `argocd.tloi.vn`: ArgoCD, read-only.
 
 | Task | How |
 |---|---|
-| Allow an email | terraform-cloudflare, `control-plane-<env>.yaml` → `access.<hostname>.emails` |
+| Allow an email or team | terraform-cloudflare, `control-plane-<env>.yaml` → `access.<hostname>` |
 | Show another database | A `Grant` like `sqllab-online-judge` in `database/mariadb/sqllab.yaml` |
 
 ## Data

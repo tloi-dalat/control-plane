@@ -6,3 +6,4 @@ resources:
   - storage.yaml
   - mariadb.yaml
   - online-judge.yaml
+  - sqllab.yaml
