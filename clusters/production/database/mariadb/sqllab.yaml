@@ -1,0 +1,21 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: sqllab
+spec:
+  mariaDbRef: { name: mariadb }
+  host: "10.42.%"
+  passwordSecretKeyRef: { name: database-mariadb-env, key: SQLLAB_PASSWORD }
+  maxUserConnections: 10
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: sqllab-online-judge
+spec:
+  mariaDbRef: { name: mariadb }
+  username: sqllab
+  host: "10.42.%"
+  database: online_judge
+  table: "*"
+  privileges: [SELECT]
