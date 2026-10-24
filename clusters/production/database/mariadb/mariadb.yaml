@@ -1,0 +1,45 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: mariadb
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  image: mariadb:11.8
+  rootPasswordSecretKeyRef:
+    name: database-mariadb-env
+    key: MARIADB_ROOT_PASSWORD
+    generate: false
+  replicas: 2
+  replicasAllowEvenNumber: true
+  replication:
+    enabled: true
+    semiSyncEnabled: false
+    primary:
+      podIndex: 0
+      autoFailover: false
+    replica:
+      replPasswordSecretKeyRef:
+        name: database-mariadb-env
+        key: MARIADB_REPL_PASSWORD
+        generate: false
+      maxLagSeconds: 60
+  storage:
+    size: 50Gi
+    storageClassName: local-static
+  timeZone: UTC
+  tls:
+    enabled: false
+  myCnf: |
+    [mariadb]
+    bind-address=*
+    skip-name-resolve
+    character-set-server=utf8mb4
+    collation-server=utf8mb4_general_ci
+    innodb_buffer_pool_size=2G
+    max_allowed_packet=256M
+    max_connections=300
+    binlog_expire_logs_seconds=604800
+  resources:
+    requests: { cpu: 250m, memory: 2560Mi }
+    limits: { memory: 4Gi }

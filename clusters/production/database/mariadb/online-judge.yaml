@@ -1,0 +1,34 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: online-judge
+spec:
+  name: online_judge
+  mariaDbRef: { name: mariadb }
+  characterSet: utf8mb4
+  collate: utf8mb4_general_ci
+  cleanupPolicy: Skip
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: online-judge
+spec:
+  name: online_judge
+  mariaDbRef: { name: mariadb }
+  host: "10.42.%"
+  passwordSecretKeyRef: { name: database-mariadb-env, key: ONLINE_JUDGE_PASSWORD }
+  cleanupPolicy: Skip
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: online-judge
+spec:
+  mariaDbRef: { name: mariadb }
+  username: online_judge
+  host: "10.42.%"
+  database: online_judge
+  table: "*"
+  privileges: [ALL PRIVILEGES]
+  cleanupPolicy: Skip
