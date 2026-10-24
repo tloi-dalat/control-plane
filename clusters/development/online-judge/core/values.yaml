@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/tloi-dalat/oj-core
-  tag: main-06e02cb
+  tag: main-a528d63
 
 env:
   SITE_FULL_URL: https://oj.tloi.shop
