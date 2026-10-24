@@ -1,36 +1,34 @@
 image:
   repository: ghcr.io/tloi-dalat/oj-core
-  tag: 0.1.1
+  tag: 0.2.0
 
 env:
-  ENV: prd
-  SITE__DOMAIN: oj.tloi.vn
-  SITE__NAME: TLOJ
-  DJANGO__DEBUG: "false"
-  DJANGO__REGISTRATION_OPEN: "true"
-  AUTH__OAUTH_ONLY: "true"
-  MYSQL__HOST: "10.42.0.1"
-  MYSQL__PORT: "3306"
-  MYSQL__DATABASE: dmoj
-  MYSQL__USER: dmoj_k8s
-  REDIS__HOST: online-judge-redis
-  REDIS__CACHE_DB: "1"
-  REDIS__CELERY_DB: "2"
-  PROBLEM__DATA_ROOT: /problems
-  MEDIA__ROOT: /media
-  BRIDGE__CONNECT_HOST: online-judge-bridge
-  EVENT__POST: ws://online-judge-wsevent:15101/
-  MAIL__BACKEND: django.core.mail.backends.smtp.EmailBackend
-  MAIL__HOST: mail.tloi.vn
-  MAIL__PORT: "587"
-  MAIL__USE_TLS: "true"
-  MAIL__USER: no-reply@tloi.vn
-  MAIL__FROM: Thang Long Da Lat Olympiad in Informatics <no-reply@tloi.vn>
-  MAIL__SERVER_EMAIL: Thang Long Da Lat Olympiad in Informatics <no-reply@tloi.vn>
-  MAIL__ADMINS: kitsune:minhquandinhcao@gmail.com
-  SOCIAL__GOOGLE_KEY: 15854195969-1d595g1fuu6fu6qabi0ht7952sm01tq4.apps.googleusercontent.com
-  POLYGON__API_USERNAME: tloj
-  LOG__LEVEL: INFO
+  SITE_FULL_URL: https://oj.tloi.vn
+  SITE_NAME: TLOJ
+  DEBUG: "false"
+  REGISTRATION_OPEN: "true"
+  OAUTH_ONLY: "true"
+  DATABASE_HOST: "10.42.0.1"
+  DATABASE_PORT: "3306"
+  DATABASE_NAME: dmoj
+  DATABASE_USER: dmoj_k8s
+  REDIS_HOST: online-judge-redis
+  REDIS_CACHE_DB: "1"
+  REDIS_CELERY_DB: "2"
+  DMOJ_PROBLEM_DATA_ROOT: /problems
+  MEDIA_ROOT: /media
+  BRIDGED_DJANGO_CONNECT: online-judge-bridge:9998
+  EVENT_DAEMON_POST: ws://online-judge-wsevent:15101/
+  EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+  EMAIL_HOST: mail.tloi.vn
+  EMAIL_PORT: "587"
+  EMAIL_USE_TLS: "true"
+  EMAIL_HOST_USER: no-reply@tloi.vn
+  DEFAULT_FROM_EMAIL: Thang Long Da Lat Olympiad in Informatics <no-reply@tloi.vn>
+  SERVER_EMAIL: Thang Long Da Lat Olympiad in Informatics <no-reply@tloi.vn>
+  ADMINS: kitsune:minhquandinhcao@gmail.com
+  VNOJ_POLYGON_API_USERNAME: tloj
+  LOG_LEVEL: INFO
 
 envFrom:
   - secretRef: { name: online-judge-core-env }
