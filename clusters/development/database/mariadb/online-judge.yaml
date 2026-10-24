@@ -18,6 +18,7 @@ spec:
   mariaDbRef: { name: mariadb }
   host: "10.42.%"
   passwordSecretKeyRef: { name: database-mariadb-env, key: ONLINE_JUDGE_PASSWORD }
+  maxUserConnections: 100
   cleanupPolicy: Skip
 ---
 apiVersion: k8s.mariadb.com/v1alpha1
