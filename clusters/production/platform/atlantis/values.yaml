@@ -12,6 +12,9 @@ hidePrevPlanComments: true
 service:
   type: ClusterIP
 
+ingress:
+  enabled: false
+
 statefulSet:
   annotations:
     secrets.infisical.com/auto-reload: "true"
