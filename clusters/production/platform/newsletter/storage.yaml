@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: platform-newsletter
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-static
+  local:
+    path: /home/tloi/data/platform/newsletter
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - { key: tloi.vn/data-node, operator: In, values: ["true"] }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: newsletter
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  storageClassName: local-static
+  volumeName: platform-newsletter
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 5Gi

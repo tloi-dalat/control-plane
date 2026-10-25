@@ -1,0 +1,30 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  instances: 2
+  enablePDB: false
+  storage:
+    size: 20Gi
+    storageClass: local-static
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: 256MB
+  managed:
+    roles:
+      - name: newsletter
+        ensure: present
+        login: true
+        passwordSecret: { name: postgres-newsletter }
+      - name: sqllab
+        ensure: present
+        login: true
+        inRoles: [pg_read_all_data]
+        passwordSecret: { name: postgres-sqllab }
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 1Gi }

@@ -1,0 +1,44 @@
+url: https://send.tloi.vn
+image:
+  repository: listmonk/listmonk
+  tag: v6.2.0
+strategy: { type: Recreate }
+command:
+  - sh
+  - -c
+  - ./listmonk --install --idempotent --yes --config= && ./listmonk --upgrade --yes --config= && exec ./listmonk --config=
+env:
+  LISTMONK_app__address: 0.0.0.0:9000
+  LISTMONK_db__host: postgres-rw.database.svc.cluster.local
+  LISTMONK_db__port: "5432"
+  LISTMONK_db__user: newsletter
+  LISTMONK_db__database: newsletter
+  LISTMONK_db__ssl_mode: disable
+  LISTMONK_ADMIN_USER: admin
+envFrom:
+  - secretRef: { name: newsletter-env }
+ports:
+  - { name: http, containerPort: 9000 }
+probes:
+  readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
+  liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6, initialDelaySeconds: 30 }
+podSecurityContext:
+  runAsUser: 1001
+  runAsGroup: 1001
+  runAsNonRoot: true
+resources:
+  requests: { cpu: 20m, memory: 64Mi }
+  limits: { cpu: 500m, memory: 512Mi }
+volumes:
+  - name: uploads
+    persistentVolumeClaim: { claimName: newsletter }
+volumeMounts:
+  - { name: uploads, mountPath: /listmonk/uploads }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: cloudflared } }
+      ports:
+        - { port: 9000, protocol: TCP }

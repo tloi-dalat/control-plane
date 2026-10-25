@@ -4,13 +4,19 @@ image:
 strategy: { type: Recreate }
 env:
   SKIP_ALL_AUTH: "1"
-  CONNECTIONS: replica
-  LABEL_replica: MariaDB replica
-  ENGINE_replica: mysql@dbgate-plugin-mysql
-  SERVER_replica: mariadb-secondary.database.svc.cluster.local
-  PORT_replica: "3306"
-  USER_replica: sqllab
-  READONLY_replica: "1"
+  CONNECTIONS: mariadb,postgres
+  LABEL_mariadb: MariaDB replica
+  ENGINE_mariadb: mysql@dbgate-plugin-mysql
+  SERVER_mariadb: mariadb-secondary.database.svc.cluster.local
+  PORT_mariadb: "3306"
+  USER_mariadb: sqllab
+  READONLY_mariadb: "1"
+  LABEL_postgres: PostgreSQL replica
+  ENGINE_postgres: postgres@dbgate-plugin-postgres
+  SERVER_postgres: postgres-ro.database.svc.cluster.local
+  PORT_postgres: "5432"
+  USER_postgres: sqllab
+  READONLY_postgres: "1"
 envFrom:
   - secretRef: { name: sqllab-env }
 ports:
