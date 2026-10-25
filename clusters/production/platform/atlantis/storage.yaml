@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: platform-prd-atlantis
+  name: platform-atlantis
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
@@ -26,7 +26,7 @@ metadata:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   storageClassName: local-static
-  volumeName: platform-prd-atlantis
+  volumeName: platform-atlantis
   accessModes: [ReadWriteOnce]
   resources:
     requests:

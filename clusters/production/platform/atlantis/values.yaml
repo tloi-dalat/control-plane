@@ -28,7 +28,7 @@ extraVolumeMounts:
   - { name: atlantis-data, mountPath: /atlantis-data }
 
 loadEnvFromSecrets:
-  - platform-atlantis-env
+  - atlantis-env
 
 environment:
   ATLANTIS_GH_APP_SLUG: tloi-atlantis
