@@ -7,7 +7,7 @@ helmCharts:
     name: app
     version: 0.2.0
     namespace: online-judge
-    releaseName: online-judge-redis
+    releaseName: redis
     valuesFile: values.yaml
 patches:
   - target: { group: apps, kind: Deployment|StatefulSet }

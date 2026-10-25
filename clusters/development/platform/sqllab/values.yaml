@@ -12,7 +12,7 @@ env:
   USER_replica: sqllab
   READONLY_replica: "1"
 envFrom:
-  - secretRef: { name: platform-sqllab-env }
+  - secretRef: { name: sqllab-env }
 ports:
   - { name: http, containerPort: 3000 }
 probes:

@@ -7,21 +7,21 @@ helmCharts:
     name: app
     version: 0.2.0
     namespace: online-judge
-    releaseName: online-judge-site
+    releaseName: site
     valuesFile: values.yaml
     additionalValuesFiles: [site.yaml]
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
     version: 0.2.0
     namespace: online-judge
-    releaseName: online-judge-bridge
+    releaseName: bridge
     valuesFile: values.yaml
     additionalValuesFiles: [bridge.yaml]
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
     version: 0.2.0
     namespace: online-judge
-    releaseName: online-judge-celery
+    releaseName: celery
     valuesFile: values.yaml
     additionalValuesFiles: [celery.yaml]
 patches:

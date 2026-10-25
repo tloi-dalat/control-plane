@@ -1,6 +1,6 @@
 image:
-  repository: ghcr.io/tloi-dalat/oj-wsevent
-  tag: main-a6325cd
+  repository: ghcr.io/tloi-dalat/online-judge-event
+  tag: main-829c6da
 replicaCount: 1
 strategy: { type: Recreate }
 ports:

@@ -1,15 +1,15 @@
 kind: StatefulSet
 replicaCount: 1
 image:
-  repository: ghcr.io/tloi-dalat/oj-judge
+  repository: ghcr.io/tloi-dalat/online-judge-judge
   tag: main-773eeff
-args: ["run", "-c", "/config/judge.yml", "online-judge-bridge"]
+args: ["run", "-c", "/config/judge.yml", "bridge"]
 env:
   DMOJ_SKIP_DEV_INSTALL: "1"
   DMOJ_JUDGE_INDEX:
     valueFrom: { fieldRef: { fieldPath: "metadata.labels['apps.kubernetes.io/pod-index']" } }
   DMOJ_JUDGE_KEY:
-    valueFrom: { secretKeyRef: { name: online-judge-judge-env, key: DMOJ_JUDGE_KEY } }
+    valueFrom: { secretKeyRef: { name: judge-env, key: DMOJ_JUDGE_KEY } }
   DMOJ_JUDGE_NAME: judge-$(DMOJ_JUDGE_INDEX)
 securityContext:
   allowPrivilegeEscalation: false
@@ -20,9 +20,9 @@ resources:
   limits: { cpu: "2", memory: 1536Mi }
 volumes:
   - name: config
-    configMap: { name: online-judge-judge-config }
+    configMap: { name: judge-config }
   - name: problems
-    persistentVolumeClaim: { claimName: online-judge-problems, readOnly: true }
+    persistentVolumeClaim: { claimName: problems, readOnly: true }
 volumeMounts:
   - { name: config, mountPath: /config, readOnly: true }
   - { name: problems, mountPath: /problems, readOnly: true }
@@ -32,7 +32,7 @@ networkPolicy:
   ingress: []
   egress:
     - to:
-        - podSelector: { matchLabels: { app.kubernetes.io/name: online-judge-bridge } }
+        - podSelector: { matchLabels: { app.kubernetes.io/name: bridge } }
       ports:
         - { port: 9999, protocol: TCP }
     - to:

@@ -13,9 +13,9 @@ podSecurityContext:
   runAsNonRoot: true
 volumes:
   - name: media
-    persistentVolumeClaim: { claimName: online-judge-media, readOnly: true }
+    persistentVolumeClaim: { claimName: media, readOnly: true }
   - name: conf
-    configMap: { name: online-judge-media-nginx }
+    configMap: { name: media-nginx }
   - name: tmp
     emptyDir: {}
 volumeMounts:
