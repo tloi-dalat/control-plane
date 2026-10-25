@@ -1,7 +1,7 @@
 url: https://tloi.shop
 image:
   repository: ghcr.io/tloi-dalat/landing-page-site
-  tag: main-ccbc687
+  tag: main-98e2664
 replicaCount: 1
 ports:
   - { name: http, containerPort: 8080 }
