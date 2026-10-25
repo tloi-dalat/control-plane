@@ -1,6 +1,6 @@
 url: https://tloi.shop
 image:
-  repository: ghcr.io/tloi-dalat/landing-page
+  repository: ghcr.io/tloi-dalat/landing-page-site
   tag: main-ccbc687
 replicaCount: 1
 ports:
