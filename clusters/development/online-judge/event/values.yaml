@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/tloi-dalat/oj-wsevent
+  repository: ghcr.io/tloi-dalat/online-judge-event
   tag: main-a6325cd
 replicaCount: 1
 strategy: { type: Recreate }

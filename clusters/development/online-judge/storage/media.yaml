@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: online-judge-dev-media
+  name: online-judge-media
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
@@ -21,12 +21,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: online-judge-media
+  name: media
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   storageClassName: local-static
-  volumeName: online-judge-dev-media
+  volumeName: online-judge-media
   accessModes: [ReadWriteOnce]
   resources:
     requests:

@@ -7,8 +7,8 @@ helmCharts:
     name: app
     version: 0.2.0
     namespace: online-judge
-    releaseName: online-judge-media
+    releaseName: media
     valuesFile: values.yaml
 configMapGenerator:
-  - name: online-judge-media-nginx
+  - name: media-nginx
     files: [default.conf=nginx.conf]

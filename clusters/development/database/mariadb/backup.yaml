@@ -15,7 +15,7 @@ spec:
       prefix: development/mariadb
       endpoint: <ACCOUNT_ID>.r2.cloudflarestorage.com
       region: auto
-      accessKeyIdSecretKeyRef: { name: database-mariadb-env, key: R2_ACCESS_KEY_ID }
-      secretAccessKeySecretKeyRef: { name: database-mariadb-env, key: R2_SECRET_ACCESS_KEY }
+      accessKeyIdSecretKeyRef: { name: mariadb-env, key: R2_ACCESS_KEY_ID }
+      secretAccessKeySecretKeyRef: { name: mariadb-env, key: R2_SECRET_ACCESS_KEY }
       tls:
         enabled: true
