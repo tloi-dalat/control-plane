@@ -1,6 +1,6 @@
 image:
-  repository: ghcr.io/tloi-dalat/oj-core
-  tag: 0.3.0
+  repository: ghcr.io/tloi-dalat/online-judge-site
+  tag: 0.4.0
 
 env:
   SITE_FULL_URL: https://oj.tloi.vn
@@ -12,13 +12,13 @@ env:
   DATABASE_PORT: "3306"
   DATABASE_NAME: online_judge
   DATABASE_USER: online_judge
-  REDIS_HOST: online-judge-redis
+  REDIS_HOST: redis
   REDIS_CACHE_DB: "1"
   REDIS_CELERY_DB: "2"
   DMOJ_PROBLEM_DATA_ROOT: /problems
   MEDIA_ROOT: /media
-  BRIDGED_DJANGO_CONNECT: online-judge-bridge:9998
-  EVENT_DAEMON_POST: ws://online-judge-wsevent:15101/
+  BRIDGED_DJANGO_CONNECT: bridge:9998
+  EVENT_DAEMON_POST: ws://event:15101/
   EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
   EMAIL_HOST: mail.tloi.vn
   EMAIL_PORT: "587"
@@ -31,7 +31,7 @@ env:
   LOG_LEVEL: INFO
 
 envFrom:
-  - secretRef: { name: online-judge-core-env }
+  - secretRef: { name: site-env }
 
 podSecurityContext:
   runAsUser: 1001
@@ -40,9 +40,9 @@ podSecurityContext:
 
 volumes:
   - name: media
-    persistentVolumeClaim: { claimName: online-judge-media }
+    persistentVolumeClaim: { claimName: media }
   - name: problems
-    persistentVolumeClaim: { claimName: online-judge-problems }
+    persistentVolumeClaim: { claimName: problems }
 volumeMounts:
   - { name: media, mountPath: /media }
   - { name: problems, mountPath: /problems }

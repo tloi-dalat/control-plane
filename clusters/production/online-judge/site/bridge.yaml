@@ -12,6 +12,6 @@ resources:
   limits: { cpu: 500m, memory: 384Mi }
 volumes:
   - name: problems
-    persistentVolumeClaim: { claimName: online-judge-problems, readOnly: true }
+    persistentVolumeClaim: { claimName: problems, readOnly: true }
 volumeMounts:
   - { name: problems, mountPath: /problems, readOnly: true }

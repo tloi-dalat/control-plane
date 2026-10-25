@@ -7,5 +7,5 @@ helmCharts:
     name: app
     version: 0.2.0
     namespace: landing-page
-    releaseName: landing-page-site
+    releaseName: site
     valuesFile: values.yaml

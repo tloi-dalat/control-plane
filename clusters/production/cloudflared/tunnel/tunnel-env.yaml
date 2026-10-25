@@ -1,8 +1,8 @@
 apiVersion: secrets.infisical.com/v1beta1
 kind: InfisicalStaticSecret
 metadata:
-  name: online-judge-judge-env
-  namespace: online-judge
+  name: tunnel-env
+  namespace: cloudflared
 spec:
   infisicalAuthRef: { name: tloi, namespace: infisical }
   syncOptions:
@@ -10,10 +10,10 @@ spec:
   sources:
     - projectSlug: control-plane
       environmentSlug: production
-      secretPath: /online-judge/judge
+      secretPath: /cloudflared
       recursive: false
   targets:
-    - name: online-judge-judge-env
-      namespace: online-judge
+    - name: tunnel-env
+      namespace: cloudflared
       kind: Secret
       creationPolicy: Owner
