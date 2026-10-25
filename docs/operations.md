@@ -60,11 +60,11 @@ mariadb-operator in `clusters/<env>/database/` (`mariadb-operator/`, `mariadb/`)
 | Switch primary | `replication.primary.podIndex` in `mariadb.yaml` |
 | Restore | A `Restore` with `backupRef: { name: daily }`; it overwrites the live tables |
 | Change the secret or volume names | The operator refuses a new `rootPasswordSecretKeyRef`: delete the `MariaDB`, its PVCs and old PVs, then sync. Data stays on disk |
-| PostgreSQL | `database/cnpg/` (operator, CRDs included) and `database/postgres/` |
+| PostgreSQL (production) | CloudNativePG: `database/postgres-operator/` and the `Cluster` in `database/postgres/` (`postgres-rw.database`). A database is a role under `managed.roles` in `postgres.yaml`, its password target in `secret.yaml` and a `Database` like `newsletter.yaml`. Instances are `postgres-1`, `postgres-2`, each on its own PV |
 
 ## SQL Lab
 
-`sqllab.tloi.shop` / `sqllab.tloi.vn`: DbGate on the replica as read-only user `sqllab`, behind Cloudflare Access
+`sqllab.tloi.shop` / `sqllab.tloi.vn`: DbGate on the MariaDB replica (production also the PostgreSQL replica) as read-only user `sqllab`, behind Cloudflare Access
 . `argocd.tloi.shop` / `argocd.tloi.vn`: ArgoCD, read-only.
 
 | Task | How |

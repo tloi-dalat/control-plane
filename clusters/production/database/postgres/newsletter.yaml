@@ -1,0 +1,9 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: newsletter
+spec:
+  name: newsletter
+  owner: newsletter
+  cluster: { name: postgres }
+  databaseReclaimPolicy: retain

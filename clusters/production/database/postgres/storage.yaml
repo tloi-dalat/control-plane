@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: database-postgres-1
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-static
+  claimRef:
+    namespace: database
+    name: postgres-1
+  local:
+    path: /home/tloi/data/database/postgres-1
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - { key: tloi.vn/data-node, operator: In, values: ["true"] }
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: database-postgres-2
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-static
+  claimRef:
+    namespace: database
+    name: postgres-2
+  local:
+    path: /home/tloi/data/database/postgres-2
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - { key: tloi.vn/data-node, operator: In, values: ["true"] }
