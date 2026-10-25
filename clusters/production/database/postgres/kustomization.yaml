@@ -5,4 +5,5 @@ resources:
   - secret.yaml
   - storage.yaml
   - postgres.yaml
+  - app.yaml
   - newsletter.yaml
