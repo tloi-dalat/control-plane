@@ -1,7 +1,7 @@
 # Set up a new VPS
 
-Builds a cluster for `development` or `production` on a fresh VPS (Ubuntu 24.04). Everything runs on one node.
-The database runs in the cluster on development (`operations.md` § Database) and on the host on production.
+Builds a cluster for `development` or `production` on a fresh VPS (Ubuntu 24.04). Everything runs on one node,
+the database included (`operations.md` § Database).
 
 | | development | production |
 |---|---|---|
@@ -17,7 +17,7 @@ Pinned versions: k3s `v1.36.5+k3s1`, ArgoCD `v3.5.3`.
 ## 1. Host
 
 ```bash
-id tloi                                   # uid/gid must be 1001 (runAsUser in core/ and media/ values.yaml)
+id tloi                                   # uid/gid must be 1001 (runAsUser in site/ and media/ values.yaml)
 sudo mkdir -p /home/tloi/data/online-judge/{media,problems}
 sudo chown -R 1001:1001 /home/tloi/data
 sudo install -d -o 999 -g 999 /home/tloi/data/database/mariadb-{0,1}
@@ -26,46 +26,7 @@ sudo install -d /home/tloi/data/platform/sqllab
 
 Moving from another server: copy `media` and `problems` into those directories first.
 
-## 2. Database
-
-Production only. Development runs MariaDB in the cluster: skip to § 3, and after § 5 restore the latest backup
-with a `Restore` (`operations.md` § Database).
-
-Install MariaDB (or MySQL), create the `dmoj` database, or restore a dump into it.
-
-Let pods connect. Pods reach the host at `10.42.0.1`, so the server must listen on all addresses:
-
-```bash
-# MariaDB: /etc/mysql/mariadb.conf.d/60-k8s.cnf    MySQL: /etc/mysql/mysql.conf.d/z-k8s.cnf
-printf '[mysqld]\nbind-address = 0.0.0.0\ninnodb_buffer_pool_size = 1G\nskip-name-resolve\n' \
-  | sudo tee /etc/mysql/mariadb.conf.d/60-k8s.cnf
-sudo systemctl restart mariadb
-sudo ss -ltnp | grep 3306                 # 0.0.0.0:3306
-```
-
-Leave out `skip-name-resolve` while anything still logs in as `user@localhost` over TCP.
-
-Allow only the pod networks to reach it:
-
-```bash
-sudo apt install -y ufw
-sudo ufw allow OpenSSH
-sudo ufw allow from 10.42.0.0/16
-sudo ufw allow from 10.43.0.0/16
-sudo ufw deny 3306/tcp
-sudo ufw enable
-```
-
-From another machine, `nc -vz -w3 <vps-ip> 3306` must fail.
-
-Create the pod user, with a new password you keep for Infisical:
-
-```bash
-sudo mysql -e "CREATE USER IF NOT EXISTS 'dmoj_k8s'@'10.42.%' IDENTIFIED BY '<password>';
-  GRANT ALL PRIVILEGES ON dmoj.* TO 'dmoj_k8s'@'10.42.%'; FLUSH PRIVILEGES;"
-```
-
-## 3. k3s
+## 2. k3s
 
 ```bash
 sudo mkdir -p /etc/rancher/k3s
@@ -76,10 +37,10 @@ mkdir -p ~/.kube && sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config \
 kubectl get nodes                         # Ready
 ```
 
-Adjust `system-reserved` in the k3s config to what runs outside Kubernetes (database, mailcow, Docker).
+Adjust `system-reserved` in the k3s config to what runs outside Kubernetes (mailcow, Docker).
 If the host uses systemd-resolved (`nameserver 127.0.0.53`), keep `resolv-conf` as in the production config.
 
-## 4. ArgoCD
+## 3. ArgoCD
 
 ```bash
 kubectl apply --server-side --force-conflicts -k bootstrap/argocd
@@ -101,22 +62,22 @@ kubectl apply -f clusters/<env>/application-set.yaml
 kubectl -n argocd get applications -w
 ```
 
-The `online-judge-*` and `cloudflared` apps retry until step 5 is done.
+Most apps retry until step 4 is done.
 
-## 5. Secrets and tunnel
+## 4. Secrets and tunnel
 
 In Infisical (project TLOI, environment `<env>`):
 
 | Folder | Keys |
 |---|---|
-| `/online-judge/core` | `SECRET_KEY`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET`, `EVENT_DAEMON_SUBMISSION_KEY`, `EVENT_DAEMON_CONTEST_KEY`, `EVENT_DAEMON_TICKET_KEY`; optional `FERNET_KEYS` (older keys for 2FA data); production also `EMAIL_HOST_PASSWORD`, `VNOJ_POLYGON_API_KEY`, `VNOJ_POLYGON_API_SECRET`, `MOSS_API_KEY`, `DISCORD_WEBHOOK_*` |
+| `/online-judge/site` | `SECRET_KEY`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET`, `EVENT_DAEMON_SUBMISSION_KEY`, `EVENT_DAEMON_CONTEST_KEY`, `EVENT_DAEMON_TICKET_KEY`; optional `FERNET_KEYS` (older keys for 2FA data); production also `EMAIL_HOST_PASSWORD`, `VNOJ_POLYGON_API_KEY`, `VNOJ_POLYGON_API_SECRET`, `MOSS_API_KEY`, `DISCORD_WEBHOOK_*` |
 | `/online-judge/judge` | `DMOJ_JUDGE_KEY` |
-| `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/core` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
+| `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/site` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
 | `/platform/sqllab` | `PASSWORD_replica` (= `SQLLAB_PASSWORD`) |
 
 - Keys are named after the Django setting they set (`.k8s.settings.py` in the site repo).
 - A brand-new environment: `bootstrap/new-app-secrets.sh` prints random values.
-- Keys that must equal another key: use an Infisical reference (`${/online-judge/core.DATABASE_PASSWORD}`).
+- Keys that must equal another key: use an Infisical reference (`${/online-judge/site.DATABASE_PASSWORD}`).
 - Moving an existing environment: keep its values. A new `SECRET_KEY` logs everyone out and breaks stored 2FA.
 
 Give the cluster its Infisical login (machine identity `tloi-<env>`, Viewer on the project):
@@ -137,13 +98,16 @@ kubectl -n argocd get applications        # all Synced / Healthy
 kubectl -n online-judge get pods          # migrate Completed, everything else Running
 ```
 
-## 6. Judges
+Moving an existing environment: restore the database with a `Restore` (`operations.md` § Database) before the
+site starts taking traffic.
+
+## 5. Judges
 
 Register `judge-0` … `judge-<n-1>` (n from the table above):
 
 ```bash
-KEY=$(kubectl -n online-judge get secret online-judge-judge-env -o jsonpath='{.data.DMOJ_JUDGE_KEY}' | base64 -d)
-kubectl -n online-judge exec deploy/online-judge-site -- env K="$KEY" N=5 python manage.py shell -c "
+KEY=$(kubectl -n online-judge get secret judge-env -o jsonpath='{.data.DMOJ_JUDGE_KEY}' | base64 -d)
+kubectl -n online-judge exec deploy/site -- env K="$KEY" N=5 python manage.py shell -c "
 import os; from judge.models import Judge
 for i in range(int(os.environ['N'])): Judge.objects.get_or_create(name=f'judge-{i}', defaults={'auth_key': os.environ['K']})"
 ```
@@ -151,13 +115,13 @@ for i in range(int(os.environ['N'])): Judge.objects.get_or_create(name=f'judge-{
 The judge must reach only the bridge:
 
 ```bash
-j() { kubectl -n online-judge exec online-judge-judge-0 -- timeout 5 bash -c "</dev/tcp/$1/$2" && echo "OPEN $1:$2" || echo "blocked $1:$2"; }
-j online-judge-bridge 9999; j 10.42.0.1 3306; j online-judge-redis 6379; j kubernetes.default 443; j 1.1.1.1 443
+j() { kubectl -n online-judge exec judge-0 -- timeout 5 bash -c "</dev/tcp/$1/$2" && echo "OPEN $1:$2" || echo "blocked $1:$2"; }
+j bridge 9999; j mariadb-primary.database 3306; j redis 6379; j kubernetes.default 443; j 1.1.1.1 443
 ```
 
 Anything other than the bridge OPEN: stop. Network policy isn't enforced.
 
-## 7. ArgoCD webhook
+## 6. ArgoCD webhook
 
 Syncs a merge within seconds instead of the 3-minute poll.
 
@@ -169,10 +133,10 @@ kubectl -n argocd patch secret argocd-secret --type merge -p "{\"stringData\":{\
 GitHub → `control-plane` → Settings → Webhooks → Add: `https://<webhook host>/api/webhook`,
 `application/json`, that secret, push events only. Recent Deliveries should show `200`.
 
-## 8. Mail (production)
+## 7. Mail (production)
 
 The site sends through mailcow on the same host as `no-reply@tloi.vn` (an SMTP-only app password in
-`EMAIL_HOST_PASSWORD`). Pods can't reach the VPS's public IP, so `core/kustomization.yaml` maps `mail.tloi.vn` to
+`EMAIL_HOST_PASSWORD`). Pods can't reach the VPS's public IP, so `site/kustomization.yaml` maps `mail.tloi.vn` to
 `10.42.0.1`. Mailcow needs:
 
 - `DISABLE_NETFILTER_ISOLATION_RULE=y` in `mailcow.conf`, or its firewall drops connections from pods.
@@ -181,7 +145,7 @@ The site sends through mailcow on the same host as `no-reply@tloi.vn` (an SMTP-o
 Test from a pod:
 
 ```bash
-kubectl -n online-judge exec -i deploy/online-judge-site -- python - <<'PY'
+kubectl -n online-judge exec -i deploy/site -- python - <<'PY'
 import os, smtplib, ssl
 s = smtplib.SMTP(os.environ['EMAIL_HOST'], int(os.environ['EMAIL_PORT']), timeout=10)
 s.ehlo(); s.starttls(context=ssl.create_default_context()); s.ehlo()
@@ -200,5 +164,5 @@ PY
 
 ## Disaster recovery
 
-New VPS: restore the `dmoj` database and `/home/tloi/data` from backup, then steps 1–5. ArgoCD redeploys
+New VPS: copy `/home/tloi/data` from backup, then steps 1–4 and restore the database. ArgoCD redeploys
 everything else from git and the secrets come back from Infisical.

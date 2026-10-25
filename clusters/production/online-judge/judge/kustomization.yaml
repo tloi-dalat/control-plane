@@ -7,10 +7,10 @@ helmCharts:
     name: app
     version: 0.2.0
     namespace: online-judge
-    releaseName: online-judge-judge
+    releaseName: judge
     valuesFile: values.yaml
 configMapGenerator:
-  - name: online-judge-judge-config
+  - name: judge-config
     files: [judge.yml]
 patches:
   - target: { group: apps, kind: Deployment|StatefulSet }

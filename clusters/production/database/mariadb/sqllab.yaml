@@ -5,7 +5,7 @@ metadata:
 spec:
   mariaDbRef: { name: mariadb }
   host: "10.42.%"
-  passwordSecretKeyRef: { name: database-mariadb-env, key: SQLLAB_PASSWORD }
+  passwordSecretKeyRef: { name: mariadb-env, key: SQLLAB_PASSWORD }
   maxUserConnections: 10
 ---
 apiVersion: k8s.mariadb.com/v1alpha1
