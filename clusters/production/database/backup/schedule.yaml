@@ -13,7 +13,7 @@ spec:
   backup:
     schedule: "0 3 * * *"
     labelSelectors:
-      - matchLabels: { cnpg.io/instanceRole: replica }
+      - matchLabels: { cnpg.io/podRole: instance, cnpg.io/instanceRole: replica }
       - matchLabels: { statefulset.kubernetes.io/pod-name: mariadb-1 }
     successfulJobsHistoryLimit: 3
     failedJobsHistoryLimit: 3
