@@ -11,6 +11,8 @@ env:
   DB_PORT: "5432"
   DB_NAME: url_shortener
   DB_USER: url_shortener
+  WEB_WORKER_NUM: "4"
+  TASK_WORKER_NUM: "2"
 envFrom:
   - secretRef: { name: url-shortener-env }
 ports:
@@ -19,8 +21,8 @@ probes:
   readiness: { httpGet: { path: /rest/health, port: http }, periodSeconds: 10 }
   liveness: { httpGet: { path: /rest/health, port: http }, periodSeconds: 20, failureThreshold: 6, initialDelaySeconds: 30 }
 resources:
-  requests: { cpu: 50m, memory: 128Mi }
-  limits: { cpu: 500m, memory: 512Mi }
+  requests: { cpu: 50m, memory: 256Mi }
+  limits: { cpu: 500m, memory: 1Gi }
 networkPolicy:
   enabled: true
   policyTypes: [Ingress]
