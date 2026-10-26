@@ -50,7 +50,7 @@ missing backup raises an alert in Discord (§ Monitoring); the rules sit next to
 
 | Part | How | Folder | Kept |
 |---|---|---|---|
-| MariaDB, PostgreSQL | k8up `Schedule` in `database/backup/schedule.yaml` runs `mariadb-dump` in `mariadb-1` and `pg_dumpall` in the current Postgres replica (the `k8up.io/backupcommand` annotations in `mariadb.yaml` and `postgres.yaml`), and stores each output with restic | `database/` | 7 daily, 4 weekly, 6 monthly |
+| MariaDB, PostgreSQL | k8up `Schedule` in `database/backup/schedule.yaml` runs `mariadb-dump` in one MariaDB pod and `pg_dumpall` in one Postgres pod (the `k8up.io/backupcommand` annotations in `mariadb.yaml` and `postgres.yaml`; k8up picks one pod per database, primary or replica), and stores each output with restic as `/database-mariadb.sql` and `/database-postgres.sql`. The selectors match pods only, so the data volumes are never copied raw | `database/` | 7 daily, 4 weekly, 6 monthly |
 | Files | k8up (`backup/operator/`) `Schedule` in `backup/data`: one restic snapshot of all of `/home/tloi/data` (a read-only volume `backup-data`), except `database/` (covered above) and `monitoring/`; prune 04:00, check Sundays | `data/` | 7 daily, 4 weekly, 6 monthly |
 
 | Task | How |
