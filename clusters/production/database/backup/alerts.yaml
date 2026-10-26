@@ -10,14 +10,24 @@ spec:
           expr: k8up_schedule_last_job_succeeded{exported_namespace="database", jobType="backup"} == 0
           labels:
             severity: critical
+            namespace: database
           annotations:
             summary: "Database backup failed"
-            description: "The last nightly dump of MariaDB and PostgreSQL didn't succeed. Check: kubectl -n database get backups.k8up.io"
+            description: "The last nightly dump of database didn't succeed. Check: kubectl -n database get backups.k8up.io"
         - alert: DatabaseBackupMissing
           expr: increase(k8up_jobs_successful_counter{exported_namespace="database", jobType="backup"}[26h]) < 1
           for: 1h
           labels:
             severity: critical
+            namespace: database
           annotations:
             summary: "No database backup for 26h"
-            description: "The last successful dump of MariaDB and PostgreSQL is older than a day."
+            description: "The last successful dump of database is older than a day."
+        - alert: DatabaseBackupSucceeded
+          expr: increase(k8up_jobs_successful_counter{exported_namespace="database", jobType="backup"}[1h]) > 0
+          labels:
+            severity: report
+            namespace: database
+          annotations:
+            summary: "Database backup succeeded"
+            description: "The dumps of database are in R2."

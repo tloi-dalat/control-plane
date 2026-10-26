@@ -46,7 +46,7 @@ kubectl -n argocd annotate application <app> argocd.argoproj.io/refresh=hard --o
 ## Backups
 
 Production only, to R2 bucket `tloi-backups` under `production/`, every day at 03:00 (Asia/Ho_Chi_Minh). A failed or
-missing backup raises an alert in Discord (§ Monitoring); the rules sit next to each part (`alerts.yaml`).
+missing backup raises an alert in Discord (§ Monitoring); each successful backup posts one `[REPORT]` message (§ Monitoring). The rules sit next to each part (`alerts.yaml`).
 
 | Part | How | Folder | Kept |
 |---|---|---|---|
@@ -70,6 +70,8 @@ node-exporter; no Grafana yet). Prometheus keeps 15 days on `/home/tloi/data/mon
 
 - Alertmanager posts `warning` and `critical` alerts to Discord, repeats them every 12h until resolved, and posts
   `Watchdog` once a day: no Watchdog message means alerting itself is broken.
+- Rules with `severity: report` post once to Discord as `[REPORT]` (receiver `discord-report`, format
+  `report.title`/`report.message` in `alert.tmpl`): no prefix, no resolved message.
 - It scrapes every `ServiceMonitor`/`PodMonitor` and loads every `PrometheusRule` in the cluster. Add an alert by
   putting an `alerts.yaml` next to the app.
 - Each alert posts once when it starts and once when it resolves, with both times (routes and receivers in
