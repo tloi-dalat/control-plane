@@ -27,21 +27,29 @@ spec:
         - selectorType: rw
           serviceTemplate:
             metadata: { name: postgres-primary }
+          updateStrategy: patch
         - selectorType: ro
           serviceTemplate:
             metadata: { name: postgres-secondary }
+          updateStrategy: patch
     roles:
       - name: newsletter
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
         passwordSecret: { name: postgres-newsletter }
       - name: url_shortener
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
         passwordSecret: { name: postgres-url-shortener }
       - name: sqllab
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
         inRoles: [pg_read_all_data]
         passwordSecret: { name: postgres-sqllab }
   resources:
