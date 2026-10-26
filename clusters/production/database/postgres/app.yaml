@@ -6,4 +6,5 @@ spec:
   name: app
   owner: app
   cluster: { name: postgres }
-  ensure: absent
+  ensure: present
+  databaseReclaimPolicy: retain
