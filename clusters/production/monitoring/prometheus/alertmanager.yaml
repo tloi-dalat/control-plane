@@ -15,6 +15,10 @@ spec:
         matchers:
           - { name: alertname, value: Watchdog, matchType: "=" }
         repeatInterval: 24h
+      - receiver: discord-report
+        matchers:
+          - { name: alertname, value: ".+BackupSucceeded", matchType: "=~" }
+        repeatInterval: 24h
       - receiver: "null"
         matchers:
           - { name: severity, value: "info|none", matchType: "=~" }
@@ -33,3 +37,9 @@ spec:
           content: '{{ if ne .CommonLabels.alertname "Watchdog" }}{{ template "alert.prefix" . }}{{ end }}'
           title: '{{ template "alert.title" . }}'
           message: '{{ template "alert.message" . }}'
+    - name: discord-report
+      discordConfigs:
+        - apiURL: { name: prometheus-env, key: DISCORD_WEBHOOK_URL }
+          sendResolved: false
+          title: '{{ template "report.title" . }}'
+          message: '{{ template "report.message" . }}'

@@ -21,3 +21,10 @@ spec:
           annotations:
             summary: "No data backup for 26h"
             description: "The last successful backup of /home/tloi/data is older than a day."
+        - alert: DataBackupSucceeded
+          expr: increase(k8up_jobs_successful_counter{exported_namespace="backup", jobType="backup"}[1h]) > 0
+          labels:
+            severity: info
+          annotations:
+            summary: "Data backup succeeded"
+            description: "The snapshot of /home/tloi/data is in R2."

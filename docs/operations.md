@@ -46,7 +46,8 @@ kubectl -n argocd annotate application <app> argocd.argoproj.io/refresh=hard --o
 ## Backups
 
 Production only, to R2 bucket `tloi-backups` under `production/`, every day at 03:00 (Asia/Ho_Chi_Minh). A failed or
-missing backup raises an alert in Discord (§ Monitoring); the rules sit next to each part (`alerts.yaml`).
+missing backup raises an alert in Discord (§ Monitoring); each successful backup posts one `[OK]` message, without
+the prefix. The rules sit next to each part (`alerts.yaml`).
 
 | Part | How | Folder | Kept |
 |---|---|---|---|
