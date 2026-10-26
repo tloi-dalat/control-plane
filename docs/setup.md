@@ -10,6 +10,7 @@ the database included (`operations.md` § Database).
 | ArgoCD UI | `argocd.tloi.shop` | `argocd.tloi.vn` |
 | SQL Lab | `sqllab.tloi.shop` | `sqllab.tloi.vn` |
 | Newsletter (listmonk) | | `send.tloi.vn` |
+| Short links (Shlink) | | `link.tloi.vn`, dashboard `link-admin.tloi.vn` |
 | k3s config | `bootstrap/development/k3s-config.yaml` | `bootstrap/production/k3s-config.yaml` |
 | Judges | 1 | 5 |
 
@@ -77,9 +78,10 @@ In Infisical (project TLOI, environment `<env>`):
 | `/online-judge/site` | `SECRET_KEY`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET`, `EVENT_DAEMON_SUBMISSION_KEY`, `EVENT_DAEMON_CONTEST_KEY`, `EVENT_DAEMON_TICKET_KEY`; optional `FERNET_KEYS` (older keys for 2FA data); production also `EMAIL_HOST_PASSWORD`, `VNOJ_POLYGON_API_KEY`, `VNOJ_POLYGON_API_SECRET`, `MOSS_API_KEY`, `DISCORD_WEBHOOK_*` |
 | `/online-judge/judge` | `DMOJ_JUDGE_KEY` |
 | `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/site` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
-| `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `SQLLAB_PASSWORD` |
+| `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `URL_SHORTENER_PASSWORD`, `SQLLAB_PASSWORD` |
 | `/platform/sqllab` | development: `PASSWORD_replica`; production: `PASSWORD_mariadb` (= `/database/mariadb` → `SQLLAB_PASSWORD`), `PASSWORD_postgres` (= `/database/postgres` → `SQLLAB_PASSWORD`) |
 | `/platform/newsletter` (production) | `LISTMONK_db__password` (= `/database/postgres` → `NEWSLETTER_PASSWORD`), `LISTMONK_ADMIN_PASSWORD` (first start only) |
+| `/platform/url-shortener` (production) | `DB_PASSWORD` (= `/database/postgres` → `URL_SHORTENER_PASSWORD`), `INITIAL_API_KEY` (Shlink API key, also used by the dashboard); optional `GEOLITE_LICENSE_KEY` (visit locations) |
 
 - Keys are named after the Django setting they set (`.k8s.settings.py` in the site repo).
 - A brand-new environment: `bootstrap/new-app-secrets.sh` prints random values.

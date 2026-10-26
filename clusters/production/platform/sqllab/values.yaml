@@ -13,7 +13,7 @@ env:
   READONLY_mariadb: "1"
   LABEL_postgres: PostgreSQL replica
   ENGINE_postgres: postgres@dbgate-plugin-postgres
-  SERVER_postgres: postgres-ro.database.svc.cluster.local
+  SERVER_postgres: postgres-secondary.database.svc.cluster.local
   PORT_postgres: "5432"
   USER_postgres: sqllab
   READONLY_postgres: "1"

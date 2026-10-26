@@ -6,4 +6,5 @@ resources:
   - storage.yaml
   - postgres.yaml
   - app.yaml
+  - url-shortener.yaml
   - newsletter.yaml

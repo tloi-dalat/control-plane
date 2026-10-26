@@ -1,0 +1,31 @@
+url: https://link.tloi.vn
+image:
+  repository: shlinkio/shlink
+  tag: 5.1.8
+env:
+  DEFAULT_DOMAIN: link.tloi.vn
+  IS_HTTPS_ENABLED: "true"
+  DEFAULT_BASE_URL_REDIRECT: https://tloi.vn
+  DB_DRIVER: postgres
+  DB_HOST: postgres-primary.database.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: url_shortener
+  DB_USER: url_shortener
+envFrom:
+  - secretRef: { name: url-shortener-env }
+ports:
+  - { name: http, containerPort: 8080 }
+probes:
+  readiness: { httpGet: { path: /rest/health, port: http }, periodSeconds: 10 }
+  liveness: { httpGet: { path: /rest/health, port: http }, periodSeconds: 20, failureThreshold: 6, initialDelaySeconds: 30 }
+resources:
+  requests: { cpu: 50m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 512Mi }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: cloudflared } }
+      ports:
+        - { port: 8080, protocol: TCP }

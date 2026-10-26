@@ -1,0 +1,25 @@
+url: https://link-admin.tloi.vn
+image:
+  repository: shlinkio/shlink-web-client
+  tag: 4.8.1
+env:
+  SHLINK_SERVER_NAME: TLOI
+  SHLINK_SERVER_URL: https://link-admin.tloi.vn
+  SHLINK_SERVER_API_KEY:
+    valueFrom: { secretKeyRef: { name: url-shortener-env, key: INITIAL_API_KEY } }
+ports:
+  - { name: http, containerPort: 8080 }
+probes:
+  readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
+  liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6 }
+resources:
+  requests: { cpu: 10m, memory: 16Mi }
+  limits: { cpu: 250m, memory: 64Mi }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: cloudflared } }
+      ports:
+        - { port: 8080, protocol: TCP }

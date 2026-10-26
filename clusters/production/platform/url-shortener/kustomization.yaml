@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - secret.yaml
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - repo: oci://ghcr.io/tloi-dalat/charts
+    name: app
+    version: 0.2.0
+    namespace: platform
+    releaseName: url-shortener
+    valuesFile: url-shortener.yaml
+  - repo: oci://ghcr.io/tloi-dalat/charts
+    name: app
+    version: 0.2.0
+    namespace: platform
+    releaseName: url-shortener-admin
+    valuesFile: url-shortener-admin.yaml
+patches:
+  - target: { group: apps, kind: Deployment|StatefulSet }
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: any
+        annotations:
+          secrets.infisical.com/auto-reload: "true"

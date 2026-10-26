@@ -60,7 +60,7 @@ mariadb-operator in `clusters/<env>/database/` (`mariadb-operator/`, `mariadb/`)
 | Switch primary | `replication.primary.podIndex` in `mariadb.yaml` |
 | Restore | A `Restore` with `backupRef: { name: daily }`; it overwrites the live tables |
 | Change the secret or volume names | The operator refuses a new `rootPasswordSecretKeyRef`: delete the `MariaDB`, its PVCs and old PVs, then sync. Data stays on disk |
-| PostgreSQL (production) | CloudNativePG: `database/postgres-operator/` and the `Cluster` in `database/postgres/` (`postgres-rw.database`). A database is a role under `managed.roles` in `postgres.yaml`, its password target in `secret.yaml` and a `Database` like `newsletter.yaml`. Instances are `postgres-1`, `postgres-2`, each on its own PV |
+| PostgreSQL (production) | CloudNativePG: `database/postgres-operator/` and the `Cluster` in `database/postgres/`. Apps write to `postgres-primary.database`; SQL Lab reads `postgres-secondary` (CloudNativePG's own `postgres-rw` also stays). A database is a role under `managed.roles` in `postgres.yaml`, its password target in `secret.yaml` and a `Database` like `newsletter.yaml`. Instances are `postgres-1`, `postgres-2`, each on its own PV |
 
 ## SQL Lab
 
