@@ -1,0 +1,9 @@
+{{ define "alert.title" }}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}{{ end }}
+{{ define "alert.message" }}{{ range .Alerts }}**{{ .Annotations.summary }}**
+{{ with .Annotations.description }}{{ . }}
+{{ end }}Severity: {{ .Labels.severity }}
+{{ with .Labels.namespace }}Namespace: `{{ . }}`
+{{ end }}Started: <t:{{ .StartsAt.Unix }}:f>
+{{ if eq .Status "resolved" }}Resolved: <t:{{ .EndsAt.Unix }}:f>
+{{ end }}
+{{ end }}{{ end }}

@@ -5,6 +5,13 @@ resources:
   - storage.yaml
   - alerts.yaml
   - monitors.yaml
+  - alertmanager.yaml
+configMapGenerator:
+  - name: alert-template
+    namespace: monitoring
+    files: [alert.tmpl]
+    options:
+      disableNameSuffixHash: true
 helmCharts:
   - repo: https://prometheus-community.github.io/helm-charts
     name: kube-prometheus-stack

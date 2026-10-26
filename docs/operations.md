@@ -72,8 +72,8 @@ node-exporter; no Grafana yet). Prometheus keeps 15 days on `/home/tloi/data/mon
   `Watchdog` once a day: no Watchdog message means alerting itself is broken.
 - It scrapes every `ServiceMonitor`/`PodMonitor` and loads every `PrometheusRule` in the cluster. Add an alert by
   putting an `alerts.yaml` next to the app.
-- Each alert posts once when it starts and once when it resolves, with both times (template `tloi.tmpl` in
-  `values.yaml`), after the text in Infisical `DISCORD_ALERT_PREFIX`. The chart's built-in rules cover crash loops, pods not ready, replicas missing, the site's HPA at
+- Each alert posts once when it starts and once when it resolves, with both times (routes and receivers in
+  `alertmanager.yaml`, message format in `alert.tmpl`), after the text in Infisical `DISCORD_ALERT_PREFIX`. The chart's built-in rules cover crash loops, pods not ready, replicas missing, the site's HPA at
   max replicas, failed jobs, full volumes and node pressure. `monitoring/prometheus/alerts.yaml` adds the
   capacity alerts, which say what to scale:
 
