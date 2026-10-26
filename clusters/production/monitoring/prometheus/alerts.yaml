@@ -1,0 +1,105 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform
+  namespace: monitoring
+spec:
+  groups:
+    - name: platform.containers
+      rules:
+        - alert: ContainerOOMKilled
+          expr: |
+            (kube_pod_container_status_restarts_total - kube_pod_container_status_restarts_total offset 10m >= 1)
+            and ignoring (reason) min_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m]) == 1
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) was OOM killed"
+            description: "The container used more memory than its limit and was restarted. Raise its memory limit or find the leak."
+        - alert: ContainerMemoryNearLimit
+          expr: |
+            max by (namespace, pod, container) (container_memory_working_set_bytes{container!=""})
+            / max by (namespace, pod, container) (kube_pod_container_resource_limits{resource="memory"}) > 0.9
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is at {{ $value | humanizePercentage }} of its memory limit"
+            description: "It will be OOM killed if it keeps growing."
+        - alert: ContainerCPUNearLimit
+          expr: |
+            sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))
+            / max by (namespace, pod, container) (kube_pod_container_resource_limits{resource="cpu"}) > 0.9
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is at {{ $value | humanizePercentage }} of its CPU limit"
+            description: "It is being throttled and gets slower. Raise its CPU limit, or its replicas if it can scale out."
+    - name: platform.node
+      rules:
+        - alert: NodeCPUHigh
+          expr: 1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) > 0.85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "The VPS CPU is {{ $value | humanizePercentage }} busy"
+            description: "Everything shares this CPU, judges included. Time to lower limits or add CPU."
+        - alert: NodeMemoryHigh
+          expr: 1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes > 0.85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "The VPS memory is {{ $value | humanizePercentage }} used"
+            description: "Containers start getting OOM killed when it runs out. Time to lower limits or add memory."
+        - alert: NodeDiskHigh
+          expr: 1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs", mountpoint!~"/boot.*"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs", mountpoint!~"/boot.*"} > 0.8
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.mountpoint }} on the VPS is {{ $value | humanizePercentage }} full"
+            description: "All data under /home/tloi/data (databases, media, problems) lives on this disk. Clean up or grow the disk before it fills."
+        - alert: NodeRequestsHigh
+          expr: |
+            sum by (resource) (
+              kube_pod_container_resource_requests{resource=~"cpu|memory"}
+              * on (namespace, pod) group_left () max by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
+            )
+            / sum by (resource) (kube_node_status_allocatable{resource=~"cpu|memory"}) > 0.9
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pods have reserved {{ $value | humanizePercentage }} of the node's {{ $labels.resource }}"
+            description: "New or scaled-up pods won't fit and stay Pending. Lower requests or add capacity."
+    - name: platform.argocd
+      rules:
+        - alert: ArgoCDAppUnhealthy
+          expr: argocd_app_info{health_status!~"Healthy|Progressing"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}"
+            description: "Open it in the ArgoCD UI to see which resource is unhealthy."
+        - alert: ArgoCDAppOutOfSync
+          expr: argocd_app_info{sync_status!="Synced"} == 1
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD app {{ $labels.name }} has been {{ $labels.sync_status }} for 30m"
+            description: "A sync is failing or stuck. Check the app's last sync result in the ArgoCD UI."
+    - name: platform.tunnel
+      rules:
+        - alert: CloudflareTunnelDown
+          expr: sum(cloudflared_tunnel_ha_connections) < 1 or absent(cloudflared_tunnel_ha_connections)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "The Cloudflare tunnel has no connections"
+            description: "Every site behind the tunnel is unreachable. Check: kubectl -n cloudflared get pods"

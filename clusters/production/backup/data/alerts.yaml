@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: backup
+spec:
+  groups:
+    - name: backup.data
+      rules:
+        - alert: DataBackupFailed
+          expr: k8up_schedule_last_job_succeeded{exported_namespace="backup", jobType="backup"} == 0
+          labels:
+            severity: critical
+          annotations:
+            summary: "Data backup failed"
+            description: "The last nightly backup of /home/tloi/data didn't succeed. Check: kubectl -n backup get backups.k8up.io"
+        - alert: DataBackupMissing
+          expr: increase(k8up_jobs_successful_counter{exported_namespace="backup", jobType="backup"}[26h]) < 1
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "No data backup for 26h"
+            description: "The last successful backup of /home/tloi/data is older than a day."

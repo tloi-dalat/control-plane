@@ -1,0 +1,25 @@
+apiVersion: k8up.io/v1
+kind: Schedule
+metadata:
+  name: daily
+spec:
+  backend:
+    repoPasswordSecretRef: { name: backup-env, key: RESTIC_PASSWORD }
+    s3:
+      endpoint: https://b37d33cb5c5af85be799f85e0950c6fe.r2.cloudflarestorage.com
+      bucket: tloi-backups/production/data
+      accessKeyIDSecretRef: { name: backup-env, key: R2_ACCESS_KEY_ID }
+      secretAccessKeySecretRef: { name: backup-env, key: R2_SECRET_ACCESS_KEY }
+  backup:
+    schedule: "0 3 * * *"
+    podSecurityContext: { runAsUser: 0 }
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+  prune:
+    schedule: "0 4 * * *"
+    retention:
+      keepDaily: 7
+      keepWeekly: 4
+      keepMonthly: 6
+  check:
+    schedule: "30 4 * * 0"

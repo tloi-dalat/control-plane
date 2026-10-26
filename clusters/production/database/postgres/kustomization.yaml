@@ -5,6 +5,8 @@ resources:
   - secret.yaml
   - storage.yaml
   - postgres.yaml
+  - podmonitor.yaml
+  - alerts.yaml
   - app.yaml
   - url-shortener.yaml
   - newsletter.yaml

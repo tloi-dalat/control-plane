@@ -14,6 +14,12 @@ spec:
     parameters:
       max_connections: "100"
       shared_buffers: 256MB
+      hot_standby_feedback: "on"
+  inheritedMetadata:
+    annotations:
+      k8up.io/backupcommand: pg_dumpall --clean --if-exists
+      k8up.io/backupcommand-container: postgres
+      k8up.io/file-extension: .sql
   managed:
     services:
       disabledDefaultServices: [ro, r]
