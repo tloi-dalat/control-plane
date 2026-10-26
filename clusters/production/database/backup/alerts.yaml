@@ -26,7 +26,7 @@ spec:
         - alert: DatabaseBackupSucceeded
           expr: increase(k8up_jobs_successful_counter{exported_namespace="database", jobType="backup"}[1h]) > 0
           labels:
-            severity: info
+            severity: report
             namespace: database
           annotations:
             summary: "Database backup succeeded"

@@ -1,4 +1,4 @@
-{{ define "alert.title" }}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}{{ end }}
+{{ define "alert.title" }}[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}{{ end }}
 {{ define "alert.message" }}{{ range .Alerts }}**{{ .Annotations.summary }}**
 {{ with .Annotations.description }}{{ . }}
 {{ end }}Severity: {{ .Labels.severity }}
@@ -7,7 +7,7 @@
 {{ if eq .Status "resolved" }}Resolved: <t:{{ .EndsAt.Unix }}:f>
 {{ end }}
 {{ end }}{{ end }}
-{{ define "report.title" }}[OK] {{ .CommonLabels.alertname }}{{ end }}
+{{ define "report.title" }}[REPORT] {{ .CommonLabels.alertname }}{{ end }}
 {{ define "report.message" }}{{ range .Alerts }}**{{ .Annotations.summary }}**
 {{ .Annotations.description }}
 At: <t:{{ .StartsAt.Unix }}:f>

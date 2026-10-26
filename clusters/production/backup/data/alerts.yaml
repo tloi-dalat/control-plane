@@ -26,7 +26,7 @@ spec:
         - alert: DataBackupSucceeded
           expr: increase(k8up_jobs_successful_counter{exported_namespace="backup", jobType="backup"}[1h]) > 0
           labels:
-            severity: info
+            severity: report
             namespace: backup
           annotations:
             summary: "Data backup succeeded"

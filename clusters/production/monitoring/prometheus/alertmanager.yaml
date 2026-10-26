@@ -17,7 +17,7 @@ spec:
         repeatInterval: 24h
       - receiver: discord-report
         matchers:
-          - { name: alertname, value: ".+BackupSucceeded", matchType: "=~" }
+          - { name: severity, value: report, matchType: "=" }
         repeatInterval: 24h
       - receiver: "null"
         matchers:
