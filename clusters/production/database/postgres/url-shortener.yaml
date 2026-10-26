@@ -1,0 +1,9 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: url-shortener
+spec:
+  name: url_shortener
+  owner: url_shortener
+  cluster: { name: postgres }
+  databaseReclaimPolicy: retain

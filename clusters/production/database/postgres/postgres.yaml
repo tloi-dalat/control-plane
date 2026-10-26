@@ -15,11 +15,24 @@ spec:
       max_connections: "100"
       shared_buffers: 256MB
   managed:
+    services:
+      disabledDefaultServices: [ro, r]
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata: { name: postgres-primary }
+        - selectorType: ro
+          serviceTemplate:
+            metadata: { name: postgres-secondary }
     roles:
       - name: newsletter
         ensure: present
         login: true
         passwordSecret: { name: postgres-newsletter }
+      - name: url_shortener
+        ensure: present
+        login: true
+        passwordSecret: { name: postgres-url-shortener }
       - name: sqllab
         ensure: present
         login: true

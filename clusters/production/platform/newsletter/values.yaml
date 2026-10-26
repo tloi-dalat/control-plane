@@ -9,7 +9,7 @@ command:
   - ./listmonk --install --idempotent --yes --config= && ./listmonk --upgrade --yes --config= && exec ./listmonk --config=
 env:
   LISTMONK_app__address: 0.0.0.0:9000
-  LISTMONK_db__host: postgres-rw.database.svc.cluster.local
+  LISTMONK_db__host: postgres-primary.database.svc.cluster.local
   LISTMONK_db__port: "5432"
   LISTMONK_db__user: newsletter
   LISTMONK_db__database: newsletter
