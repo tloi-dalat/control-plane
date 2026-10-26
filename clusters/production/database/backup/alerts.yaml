@@ -10,6 +10,7 @@ spec:
           expr: k8up_schedule_last_job_succeeded{exported_namespace="database", jobType="backup"} == 0
           labels:
             severity: critical
+            namespace: database
           annotations:
             summary: "Database backup failed"
             description: "The last nightly dump of database didn't succeed. Check: kubectl -n database get backups.k8up.io"
@@ -18,6 +19,7 @@ spec:
           for: 1h
           labels:
             severity: critical
+            namespace: database
           annotations:
             summary: "No database backup for 26h"
             description: "The last successful dump of database is older than a day."
@@ -25,6 +27,7 @@ spec:
           expr: increase(k8up_jobs_successful_counter{exported_namespace="database", jobType="backup"}[1h]) > 0
           labels:
             severity: info
+            namespace: database
           annotations:
             summary: "Database backup succeeded"
             description: "The dumps of database are in R2."
