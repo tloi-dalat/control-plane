@@ -1,0 +1,9 @@
+fullnameOverride: k8up
+k8up:
+  timezone: Asia/Ho_Chi_Minh
+resources:
+  requests: { cpu: 10m, memory: 64Mi }
+  limits: { memory: 256Mi }
+metrics:
+  serviceMonitor:
+    enabled: true

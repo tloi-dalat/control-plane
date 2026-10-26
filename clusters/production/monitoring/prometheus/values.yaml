@@ -1,0 +1,107 @@
+fullnameOverride: monitoring
+
+grafana:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+defaultRules:
+  rules:
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeProxy: false
+  disabled:
+    KubeCPUOvercommit: true
+    KubeMemoryOvercommit: true
+    NodeMemoryHighUtilization: true
+
+kube-state-metrics:
+  fullnameOverride: kube-state-metrics
+
+prometheus-node-exporter:
+  fullnameOverride: node-exporter
+
+prometheusOperator:
+  admissionWebhooks:
+    enabled: false
+  resources:
+    requests: { cpu: 20m, memory: 64Mi }
+    limits: { memory: 256Mi }
+
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    retentionSize: 18GB
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    resources:
+      requests: { cpu: 100m, memory: 512Mi }
+      limits: { memory: 2Gi }
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-static
+          volumeName: monitoring-prometheus
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 20Gi
+
+alertmanager:
+  alertmanagerSpec:
+    secrets: [prometheus-env, alertmanager-templates]
+    resources:
+      requests: { cpu: 10m, memory: 32Mi }
+      limits: { memory: 128Mi }
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: discord
+      group_by: [alertname, namespace]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      routes:
+        - receiver: discord
+          matchers: ['alertname = "Watchdog"']
+          repeat_interval: 24h
+        - receiver: "null"
+          matchers: ['severity =~ "info|none"']
+    inhibit_rules:
+      - source_matchers: ['severity = "critical"']
+        target_matchers: ['severity = "warning"']
+        equal: [namespace, alertname]
+    receivers:
+      - name: "null"
+      - name: discord
+        discord_configs:
+          - webhook_url_file: /etc/alertmanager/secrets/prometheus-env/DISCORD_WEBHOOK_URL
+            send_resolved: true
+            content: '{{ if ne .CommonLabels.alertname "Watchdog" }}{{ template "tloi.prefix" . }}{{ end }}'
+            title: '{{ template "tloi.title" . }}'
+            message: '{{ template "tloi.message" . }}'
+    templates:
+      - /etc/alertmanager/config/*.tmpl
+      - /etc/alertmanager/secrets/alertmanager-templates/*.tmpl
+  templateFiles:
+    tloi.tmpl: |-
+      {{ define "tloi.title" }}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}{{ end }}
+      {{ define "tloi.message" }}{{ range .Alerts }}**{{ .Annotations.summary }}**
+      {{ with .Annotations.description }}{{ . }}
+      {{ end }}Severity: {{ .Labels.severity }}
+      {{ with .Labels.namespace }}Namespace: `{{ . }}`
+      {{ end }}Started: <t:{{ .StartsAt.Unix }}:f>
+      {{ if eq .Status "resolved" }}Resolved: <t:{{ .EndsAt.Unix }}:f>
+      {{ end }}
+      {{ end }}{{ end }}

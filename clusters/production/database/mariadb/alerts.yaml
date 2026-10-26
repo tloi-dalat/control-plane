@@ -1,0 +1,48 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mariadb
+spec:
+  groups:
+    - name: mariadb
+      rules:
+        - alert: MariaDBDown
+          expr: mysql_up{namespace="database"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MariaDB {{ or $labels.pod $labels.instance }} is down"
+            description: "Check: kubectl -n database get mariadb,pods"
+        - alert: MariaDBReplicationStopped
+          expr: mysql_slave_status_slave_io_running{namespace="database"} * mysql_slave_status_slave_sql_running{namespace="database"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MariaDB replication stopped on {{ or $labels.pod $labels.instance }}"
+            description: "The replica no longer copies the primary, so SQL Lab and the nightly dump read stale data. Check: kubectl -n database get mariadb mariadb -o jsonpath='{.status.replication}'"
+        - alert: MariaDBNoReplica
+          expr: absent(mysql_slave_status_slave_io_running{namespace="database"} == 1)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MariaDB has no replica connected"
+            description: "The primary runs alone: SQL Lab and the nightly dump have nothing to read from. Check: kubectl -n database get mariadb mariadb"
+        - alert: MariaDBReplicationLag
+          expr: mysql_slave_status_seconds_behind_master{namespace="database"} > 300
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MariaDB replica {{ or $labels.pod $labels.instance }} is {{ $value | humanizeDuration }} behind"
+            description: "The replica can't keep up with writes. It usually needs more CPU or memory."
+        - alert: MariaDBConnectionsHigh
+          expr: mysql_global_status_threads_connected{namespace="database"} / mysql_global_variables_max_connections{namespace="database"} > 0.8
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MariaDB {{ or $labels.pod $labels.instance }} is at {{ $value | humanizePercentage }} of max_connections"
+            description: "New connections are refused at 100%. Raise max_connections in mariadb.yaml, or check which app holds too many."

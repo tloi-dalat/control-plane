@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - secret.yaml
+  - storage.yaml
+  - alerts.yaml
+  - monitors.yaml
+helmCharts:
+  - repo: https://prometheus-community.github.io/helm-charts
+    name: kube-prometheus-stack
+    version: 88.6.2
+    namespace: monitoring
+    releaseName: prometheus
+    includeCRDs: true
+    valuesFile: values.yaml
+patches:
+  - target: { group: apiextensions.k8s.io, kind: CustomResourceDefinition }
+    patch: |-
+      apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      metadata:
+        name: any
+        annotations:
+          argocd.argoproj.io/sync-options: Prune=false,Delete=false
