@@ -45,7 +45,7 @@ spec:
     limits: { memory: 4Gi }
   podMetadata:
     annotations:
-      k8up.io/backupcommand: sh -c 'mariadb-dump --all-databases --single-transaction --routines --events -uroot -p"$MARIADB_ROOT_PASSWORD"'
+      k8up.io/backupcommand: sh -c 'mariadb-dump -h mariadb-secondary --all-databases --single-transaction --routines --events -uroot -p"$MARIADB_ROOT_PASSWORD"'
       k8up.io/backupcommand-container: mariadb
       k8up.io/file-extension: .sql
   metrics:
