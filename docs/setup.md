@@ -78,10 +78,10 @@ In Infisical (project TLOI, environment `<env>`):
 |---|---|
 | `/online-judge/site` | `SECRET_KEY`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET`, `EVENT_DAEMON_SUBMISSION_KEY`, `EVENT_DAEMON_CONTEST_KEY`, `EVENT_DAEMON_TICKET_KEY`; optional `FERNET_KEYS` (older keys for 2FA data); production also `EMAIL_HOST_PASSWORD`, `VNOJ_POLYGON_API_KEY`, `VNOJ_POLYGON_API_SECRET`, `MOSS_API_KEY`, `DISCORD_WEBHOOK_*` |
 | `/online-judge/judge` | `DMOJ_JUDGE_KEY` |
-| `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/site` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD` |
+| `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/site` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`; production also `BACKUP_PASSWORD` |
 | `/backup` (production) | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (R2 token for bucket `tloi-backups`), `RESTIC_PASSWORD` (encrypts file backups; keep a copy outside Infisical) |
 | `/monitoring/prometheus` (production) | `DISCORD_WEBHOOK_URL` (alerts), `DISCORD_ALERT_PREFIX` (text before every alert, e.g. a role mention `<@&role-id>`; can be empty) |
-| `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `URL_SHORTENER_PASSWORD`, `SQLLAB_PASSWORD` |
+| `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `URL_SHORTENER_PASSWORD`, `SQLLAB_PASSWORD`, `BACKUP_PASSWORD` |
 | `/platform/sqllab` | development: `PASSWORD_replica`; production: `PASSWORD_mariadb` (= `/database/mariadb` → `SQLLAB_PASSWORD`), `PASSWORD_postgres` (= `/database/postgres` → `SQLLAB_PASSWORD`) |
 | `/platform/newsletter` (production) | `LISTMONK_db__password` (= `/database/postgres` → `NEWSLETTER_PASSWORD`), `LISTMONK_ADMIN_PASSWORD` (first start only) |
 | `/platform/url-shortener` (production) | `DB_PASSWORD` (= `/database/postgres` → `URL_SHORTENER_PASSWORD`), `INITIAL_API_KEY` (Shlink API key, also used by the dashboard); optional `GEOLITE_LICENSE_KEY` (visit locations) |

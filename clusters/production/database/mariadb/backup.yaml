@@ -1,0 +1,21 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: backup
+spec:
+  mariaDbRef: { name: mariadb }
+  host: "10.42.%"
+  passwordSecretKeyRef: { name: mariadb-env, key: BACKUP_PASSWORD }
+  maxUserConnections: 2
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: backup
+spec:
+  mariaDbRef: { name: mariadb }
+  username: backup
+  host: "10.42.%"
+  database: "*"
+  table: "*"
+  privileges: [SELECT, SHOW VIEW, TRIGGER, EVENT, LOCK TABLES, PROCESS]

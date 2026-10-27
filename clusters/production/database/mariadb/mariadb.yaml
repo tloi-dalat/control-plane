@@ -43,9 +43,13 @@ spec:
   resources:
     requests: { cpu: 250m, memory: 2560Mi }
     limits: { memory: 4Gi }
+  env:
+    - name: BACKUP_PASSWORD
+      valueFrom:
+        secretKeyRef: { name: mariadb-env, key: BACKUP_PASSWORD }
   podMetadata:
     annotations:
-      k8up.io/backupcommand: sh -c 'mariadb-dump --all-databases --single-transaction --routines --events -uroot -p"$MARIADB_ROOT_PASSWORD"'
+      k8up.io/backupcommand: sh -c 'mariadb-dump -h mariadb-secondary -ubackup -p"$BACKUP_PASSWORD" --all-databases --single-transaction --routines --events'
       k8up.io/backupcommand-container: mariadb
       k8up.io/file-extension: .sql
   metrics:
