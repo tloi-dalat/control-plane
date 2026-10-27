@@ -80,7 +80,7 @@ In Infisical (project TLOI, environment `<env>`):
 | `/online-judge/judge` | `DMOJ_JUDGE_KEY` |
 | `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/site` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`; production also `BACKUP_PASSWORD` |
 | `/backup` (production) | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (R2 token for bucket `tloi-backups`), `RESTIC_PASSWORD` (encrypts file backups; keep a copy outside Infisical) |
-| `/monitoring/prometheus` (production) | `DISCORD_WEBHOOK_URL` (alerts), `DISCORD_ALERT_PREFIX` (text before every alert, e.g. a role mention `<@&role-id>`; can be empty) |
+| `/monitoring/prometheus` (production) | `DISCORD_WEBHOOK_ALERT_URL` (alerts), `DISCORD_WEBHOOK_SLACK_REPORT_URL` (reports: a webhook URL ending in `/slack`), `DISCORD_ALERT_PREFIX` (text before every alert, e.g. a role mention `<@&role-id>`; can be empty) |
 | `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `URL_SHORTENER_PASSWORD`, `SQLLAB_PASSWORD`, `BACKUP_PASSWORD` |
 | `/platform/sqllab` | development: `PASSWORD_replica`; production: `PASSWORD_mariadb` (= `/database/mariadb` → `SQLLAB_PASSWORD`), `PASSWORD_postgres` (= `/database/postgres` → `SQLLAB_PASSWORD`) |
 | `/platform/newsletter` (production) | `LISTMONK_db__password` (= `/database/postgres` → `NEWSLETTER_PASSWORD`), `LISTMONK_ADMIN_PASSWORD` (first start only) |
