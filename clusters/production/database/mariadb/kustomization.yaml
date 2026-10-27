@@ -8,3 +8,4 @@ resources:
   - alerts.yaml
   - online-judge.yaml
   - sqllab.yaml
+  - backup.yaml
