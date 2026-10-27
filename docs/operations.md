@@ -70,8 +70,9 @@ node-exporter; no Grafana yet). Prometheus keeps 15 days on `/home/tloi/data/mon
 
 - Alertmanager posts `warning` and `critical` alerts to Discord, repeats them every 12h until resolved, and posts
   `Watchdog` once a day: no Watchdog message means alerting itself is broken.
-- Rules with `severity: report` post once to Discord as `[REPORT]` (receiver `discord-report`, format
-  `report.title`/`report.message` in `alert.tmpl`): no prefix, no resolved message.
+- Rules with `severity: report` post once to Discord as `[REPORT]` in blue (receiver `discord-report`, format
+  `report.title`/`report.message` in `alert.tmpl`): no prefix, no resolved message. It goes through Discord's
+  Slack-compatible webhook (`DISCORD_WEBHOOK_SLACK_REPORT_URL`, ending in `/slack`), because Alertmanager's Discord integration colours by status only.
 - It scrapes every `ServiceMonitor`/`PodMonitor` and loads every `PrometheusRule` in the cluster. Add an alert by
   putting an `alerts.yaml` next to the app.
 - Each alert posts once when it starts and once when it resolves, with both times (routes and receivers in

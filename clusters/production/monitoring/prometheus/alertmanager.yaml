@@ -32,14 +32,15 @@ spec:
     - name: "null"
     - name: discord-alert
       discordConfigs:
-        - apiURL: { name: prometheus-env, key: DISCORD_WEBHOOK_URL }
+        - apiURL: { name: prometheus-env, key: DISCORD_WEBHOOK_ALERT_URL }
           sendResolved: true
           content: '{{ if ne .CommonLabels.alertname "Watchdog" }}{{ template "alert.prefix" . }}{{ end }}'
           title: '{{ template "alert.title" . }}'
           message: '{{ template "alert.message" . }}'
     - name: discord-report
-      discordConfigs:
-        - apiURL: { name: prometheus-env, key: DISCORD_WEBHOOK_URL }
+      slackConfigs:
+        - apiURL: { name: prometheus-env, key: DISCORD_WEBHOOK_SLACK_REPORT_URL }
           sendResolved: false
+          color: "#3498DB"
           title: '{{ template "report.title" . }}'
-          message: '{{ template "report.message" . }}'
+          text: '{{ template "report.message" . }}'
