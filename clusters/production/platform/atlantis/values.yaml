@@ -37,6 +37,7 @@ environment:
   ATLANTIS_GH_APP_SLUG: tloi-atlantis
   ATLANTIS_WRITE_GIT_CREDS: "true"
   ATLANTIS_GH_TEAM_ALLOWLIST: sre:plan,sre:apply,sre:unlock,sre:import,sre:state,swe:plan,swe:apply,swe:unlock,swe:import
+  ATLANTIS_ALLOW_COMMANDS: version,plan,apply,cancel,unlock,approve_policies,import,state
   ATLANTIS_DISABLE_AUTOPLAN: "true"
   ATLANTIS_AUTOMERGE: "true"
   ATLANTIS_AUTOMERGE_METHOD: squash
