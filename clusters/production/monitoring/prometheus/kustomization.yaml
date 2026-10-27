@@ -6,6 +6,7 @@ resources:
   - alerts.yaml
   - monitors.yaml
   - alertmanager.yaml
+  - services.yaml
 configMapGenerator:
   - name: notification-template
     namespace: monitoring
