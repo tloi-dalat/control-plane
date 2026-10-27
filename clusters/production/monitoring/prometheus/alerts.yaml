@@ -14,7 +14,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) was OOM killed"
+            summary: "`{{ $labels.namespace }}/{{ $labels.pod }}` (`{{ $labels.container }}`) was OOM killed"
             description: "The container used more memory than its limit and was restarted. Raise its memory limit or find the leak."
         - alert: ContainerMemoryNearLimit
           expr: |
@@ -24,7 +24,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is at {{ $value | humanizePercentage }} of its memory limit"
+            summary: "`{{ $labels.namespace }}/{{ $labels.pod }}` (`{{ $labels.container }}`) is at {{ $value | humanizePercentage }} of its memory limit"
             description: "It will be OOM killed if it keeps growing."
         - alert: ContainerCPUNearLimit
           expr: |
@@ -34,7 +34,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is at {{ $value | humanizePercentage }} of its CPU limit"
+            summary: "`{{ $labels.namespace }}/{{ $labels.pod }}` (`{{ $labels.container }}`) is at {{ $value | humanizePercentage }} of its CPU limit"
             description: "It is being throttled and gets slower. Raise its CPU limit, or its replicas if it can scale out."
     - name: platform.node
       rules:
@@ -60,8 +60,8 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "{{ $labels.mountpoint }} on the VPS is {{ $value | humanizePercentage }} full"
-            description: "All data under /home/tloi/data (databases, media, problems) lives on this disk. Clean up or grow the disk before it fills."
+            summary: "`{{ $labels.mountpoint }}` on the VPS is {{ $value | humanizePercentage }} full"
+            description: "All data under `/home/tloi/data` (databases, media, problems) lives on this disk. Clean up or grow the disk before it fills."
         - alert: NodeRequestsHigh
           expr: |
             sum by (resource) (
@@ -73,7 +73,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "Pods have reserved {{ $value | humanizePercentage }} of the node's {{ $labels.resource }}"
+            summary: "Pods have reserved {{ $value | humanizePercentage }} of the node's `{{ $labels.resource }}`"
             description: "New or scaled-up pods won't fit and stay Pending. Lower requests or add capacity."
     - name: platform.argocd
       rules:
@@ -83,7 +83,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}"
+            summary: "ArgoCD app `{{ $labels.name }}` is {{ $labels.health_status }}"
             description: "Open it in the ArgoCD UI to see which resource is unhealthy."
         - alert: ArgoCDAppOutOfSync
           expr: argocd_app_info{sync_status!="Synced"} == 1
@@ -91,7 +91,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "ArgoCD app {{ $labels.name }} has been {{ $labels.sync_status }} for 30m"
+            summary: "ArgoCD app `{{ $labels.name }}` has been {{ $labels.sync_status }} for 30m"
             description: "A sync is failing or stuck. Check the app's last sync result in the ArgoCD UI."
     - name: platform.tunnel
       rules:
@@ -102,4 +102,4 @@ spec:
             severity: critical
           annotations:
             summary: "The Cloudflare tunnel has no connections"
-            description: "Every site behind the tunnel is unreachable. Check: kubectl -n cloudflared get pods"
+            description: "Every site behind the tunnel is unreachable. Check: `kubectl -n cloudflared get pods`"

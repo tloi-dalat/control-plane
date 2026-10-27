@@ -46,12 +46,8 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
-    scrapeClasses:
-      - name: default
-        default: true
-        relabelings:
-          - targetLabel: cluster
-            replacement: production
+    externalLabels:
+      cluster: production
     resources:
       requests: { cpu: 100m, memory: 512Mi }
       limits: { memory: 2Gi }

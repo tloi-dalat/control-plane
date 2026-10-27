@@ -12,16 +12,16 @@ spec:
           labels:
             severity: critical
           annotations:
-            summary: "PostgreSQL {{ or $labels.pod $labels.instance }} is down"
-            description: "Check: kubectl -n database get cluster postgres"
+            summary: "PostgreSQL `{{ or $labels.pod $labels.instance }}` is down"
+            description: "Check: `kubectl -n database get cluster postgres`"
         - alert: PostgresReplicationStopped
           expr: cnpg_pg_replication_in_recovery{namespace="database"} == 1 and cnpg_pg_replication_is_wal_receiver_up{namespace="database"} == 0
           for: 5m
           labels:
             severity: critical
           annotations:
-            summary: "PostgreSQL replication stopped on {{ or $labels.pod $labels.instance }}"
-            description: "The replica no longer copies the primary, so SQL Lab and the nightly dump read stale data. Check: kubectl -n database get cluster postgres"
+            summary: "PostgreSQL replication stopped on `{{ or $labels.pod $labels.instance }}`"
+            description: "The replica no longer copies the primary, so SQL Lab and the nightly dump read stale data. Check: `kubectl -n database get cluster postgres`"
         - alert: PostgresNoReplica
           expr: max(cnpg_pg_replication_streaming_replicas{namespace="database"}) < 1
           for: 10m
@@ -29,14 +29,14 @@ spec:
             severity: warning
           annotations:
             summary: "PostgreSQL has no replica connected"
-            description: "The primary runs alone: SQL Lab and the nightly dump have nothing to read from. Check: kubectl -n database get cluster postgres"
+            description: "The primary runs alone: SQL Lab and the nightly dump have nothing to read from. Check: `kubectl -n database get cluster postgres`"
         - alert: PostgresReplicationLag
           expr: cnpg_pg_replication_lag{namespace="database"} > 300
           for: 10m
           labels:
             severity: warning
           annotations:
-            summary: "PostgreSQL replica {{ or $labels.pod $labels.instance }} is {{ $value | humanizeDuration }} behind"
+            summary: "PostgreSQL replica `{{ or $labels.pod $labels.instance }}` is {{ $value | humanizeDuration }} behind"
             description: "The replica can't keep up with writes. It usually needs more CPU or memory."
         - alert: PostgresConnectionsHigh
           expr: sum by (pod) (cnpg_backends_total{namespace="database"}) / max by (pod) (cnpg_pg_settings_setting{namespace="database", name="max_connections"}) > 0.8
@@ -44,5 +44,5 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "PostgreSQL {{ or $labels.pod $labels.instance }} is at {{ $value | humanizePercentage }} of max_connections"
-            description: "New connections are refused at 100%. Raise max_connections in postgres.yaml, or check which app holds too many."
+            summary: "PostgreSQL `{{ or $labels.pod $labels.instance }}` is at {{ $value | humanizePercentage }} of `max_connections`"
+            description: "New connections are refused at 100%. Raise `max_connections` in `postgres.yaml`, or check which app holds too many."
