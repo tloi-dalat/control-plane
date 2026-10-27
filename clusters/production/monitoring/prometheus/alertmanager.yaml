@@ -42,5 +42,6 @@ spec:
         - apiURL: { name: prometheus-env, key: DISCORD_WEBHOOK_SLACK_REPORT_URL }
           sendResolved: false
           color: "#3498DB"
+          pretext: '{{ template "report.prefix" . }}'
           title: '{{ template "report.title" . }}'
           text: '{{ template "report.message" . }}'

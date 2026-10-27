@@ -1,0 +1,15 @@
+{{ define "alert.title" }}{{ if eq .Status "firing" }}{{ template "alert.firing" . }}{{ else }}{{ template "alert.resolved" . }}{{ end }} {{ with .CommonLabels.cluster }}[{{ . | toUpper }}] {{ end }}{{ .CommonLabels.alertname }}{{ end }}
+{{ define "alert.message" }}{{ range .Alerts }}**{{ reReplaceAll " on cluster [^ .,]*" "" .Annotations.summary }}**
+{{ with .Annotations.description }}{{ reReplaceAll " on cluster [^ .,]*" "" . }}
+{{ end }}Severity: {{ .Labels.severity }}
+{{ with .Labels.namespace }}Namespace: `{{ . }}`
+{{ end }}{{ with .Labels.pod }}Pod: `{{ . }}`
+{{ end }}Started: <t:{{ .StartsAt.Unix }}:f>
+{{ if eq .Status "resolved" }}Resolved: <t:{{ .EndsAt.Unix }}:f>
+{{ end }}
+{{ end }}{{ end }}
+{{ define "report.title" }}{{ template "report.info" . }} {{ with .CommonLabels.cluster }}[{{ . | toUpper }}] {{ end }}{{ .CommonLabels.alertname }}{{ end }}
+{{ define "report.message" }}{{ range .Alerts }}**{{ .Annotations.summary }}**
+{{ .Annotations.description }}
+At: <t:{{ .StartsAt.Unix }}:f>
+{{ end }}{{ end }}

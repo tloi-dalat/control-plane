@@ -46,12 +46,8 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
-    scrapeClasses:
-      - name: default
-        default: true
-        relabelings:
-          - targetLabel: cluster
-            replacement: production
+    externalLabels:
+      cluster: production
     resources:
       requests: { cpu: 100m, memory: 512Mi }
       limits: { memory: 2Gi }
@@ -72,8 +68,8 @@ alertmanager:
       global:
         resolveTimeout: 5m
       templates:
-        - configMap: { name: alert-template, key: alert.tmpl }
-        - secret: { name: alert-prefix, key: prefix.tmpl }
+        - configMap: { name: notification-template, key: notification.tmpl }
+        - secret: { name: notification-prefix, key: prefix.tmpl }
     resources:
       requests: { cpu: 10m, memory: 32Mi }
       limits: { memory: 128Mi }
