@@ -1,7 +1,7 @@
 autoscaling:
   enabled: true
   minReplicas: 2
-  maxReplicas: 20
+  maxReplicas: 4
   targetCPUUtilizationPercentage: 70
   behavior:
     scaleUp:
