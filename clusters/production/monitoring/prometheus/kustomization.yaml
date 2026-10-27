@@ -7,9 +7,9 @@ resources:
   - monitors.yaml
   - alertmanager.yaml
 configMapGenerator:
-  - name: alert-template
+  - name: notification-template
     namespace: monitoring
-    files: [alert.tmpl]
+    files: [notification.tmpl]
     options:
       disableNameSuffixHash: true
 helmCharts:

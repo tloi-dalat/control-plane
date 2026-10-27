@@ -72,12 +72,12 @@ node-exporter; no Grafana yet). Prometheus keeps 15 days on `/home/tloi/data/mon
   `Watchdog` once a day: no Watchdog message means alerting itself is broken.
 - Rules with `severity: report` post once to Discord as `<icon> [PRODUCTION] <alertname>` in blue, the icon from
   `DISCORD_REPORT_INFO_PREFIX` and the text in `DISCORD_REPORT_PREFIX` before it (receiver `discord-report`, format
-  `report.title`/`report.message` in `alert.tmpl`): no resolved message. It goes through Discord's
+  `report.title`/`report.message` in `notification.tmpl`): no resolved message. It goes through Discord's
   Slack-compatible webhook (`DISCORD_WEBHOOK_SLACK_REPORT_URL`, ending in `/slack`), because Alertmanager's Discord integration colours by status only.
 - It scrapes every `ServiceMonitor`/`PodMonitor` and loads every `PrometheusRule` in the cluster. Add an alert by
   putting an `alerts.yaml` next to the app.
 - Each alert posts once when it starts and once when it resolves, with both times (routes and receivers in
-  `alertmanager.yaml`, message format in `alert.tmpl`): title `<icon> [PRODUCTION] <alertname>`, the icon from Infisical
+  `alertmanager.yaml`, message format in `notification.tmpl`): title `<icon> [PRODUCTION] <alertname>`, the icon from Infisical
   `DISCORD_ALERT_FIRING_PREFIX` / `DISCORD_ALERT_RESOLVED_PREFIX`, the cluster from `externalLabels` in `values.yaml`,
   after the text in `DISCORD_ALERT_PREFIX`. The chart's built-in rules cover crash loops, pods not ready, replicas missing, the site's HPA at
   max replicas, failed jobs, full volumes and node pressure. `monitoring/prometheus/alerts.yaml` adds the
