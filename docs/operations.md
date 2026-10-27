@@ -97,8 +97,8 @@ node-exporter; no Grafana yet). Prometheus keeps 15 days on `/home/tloi/data/mon
   (`database/mariadb/alerts.yaml`, `database/postgres/alerts.yaml`), and backups.
 - k3s runs etcd, the scheduler, the controller manager and kube-proxy inside its own process, so their monitors and
   alerts are off.
-- Look at it: `kubectl -n monitoring port-forward svc/monitoring-prometheus 9090` (alerts at
-  http://localhost:9090/alerts) and `svc/monitoring-alertmanager 9093` (silences).
+- Look at it: https://monitor.tloi.vn (Prometheus: graphs, `/alerts`) and https://alert.tloi.vn (Alertmanager:
+  silences).
 
 ## Database
 

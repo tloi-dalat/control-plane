@@ -46,6 +46,7 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
+    externalUrl: https://monitor.tloi.vn
     externalLabels:
       cluster: production
     resources:
@@ -63,6 +64,7 @@ prometheus:
 
 alertmanager:
   alertmanagerSpec:
+    externalUrl: https://alert.tloi.vn
     alertmanagerConfiguration:
       name: discord
       global:
