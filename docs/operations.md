@@ -134,22 +134,29 @@ mariadb-operator in `clusters/<env>/database/` (`mariadb-operator/`, `mariadb/`)
 Production only, in namespace `ai`. `ai/llm` runs Ollama with one model (`MODEL` in `values.yaml`, default
 `qwen3:8b`), limited to 4 of the 12 CPUs and 12 GiB. On start it downloads the model into `/home/tloi/data/ai/llm`
 (not backed up) and builds `local` from it with `THREADS` (keep equal to the CPU limit) and `CONTEXT`. `ai/gateway`
-(LiteLLM) is the API; `ai/search` (SearXNG) is the web search it uses. Only the gateway is reachable from outside.
+(LiteLLM) is the only way in. It also runs tools from three MCP servers (`mcp_servers` in `config.yaml`):
+
+| MCP server | App | Tools |
+|---|---|---|
+| `search` | `search-mcp` in `ai/search` (mcp-searxng) | web search through SearXNG, read a page or PDF (public URLs only) |
+| `browser` | `ai/browser` (Crawl4AI, headless Chromium on gVisor), Service `browser-mcp` | read pages built by JavaScript, crawl |
+| `sandbox` | `sandbox-mcp` in `ai/sandbox` (Jupyter MCP Server) | run Python and shell (`!cmd`) in a Jupyter kernel on gVisor: no secrets, no access to the cluster, 2 CPUs, 4 GiB, shared by every caller and wiped on restart |
 
 | What | Where |
 |---|---|
 | API | `https://ai.tloi.vn`, key `LITELLM_MASTER_KEY` from Infisical `/ai/gateway`, model `local` |
 | OpenAI format | `POST /v1/chat/completions` (any OpenAI SDK: base URL `https://ai.tloi.vn/v1`) |
 | Gemini format | `POST /v1beta/models/local:generateContent` (Google GenAI SDK: `GOOGLE_GEMINI_BASE_URL=https://ai.tloi.vn`) |
-| Web search | `POST /v1/search/searxng` with `{"query": "..."}`; or send a `web_search` tool in a chat request and the gateway searches for the model |
+| With tools | `POST /v1/responses` with `"stream": true`, `"store": false` and `"tools": [{"type": "mcp", "server_label": "tloi", "server_url": "litellm_proxy", "require_approval": "never"}]`: LiteLLM runs the tools and answers, at most 5 rounds of tool calls (1 without streaming) |
 
 | Task | How |
 |---|---|
-| Before a contest | `replicaCount: 0` in `ai/llm/values.yaml` (the API then answers with an error); `1` after |
+| Before a contest | `replicaCount: 0` in `ai/llm/values.yaml`, `ai/browser/values.yaml` and `ai/sandbox/values.yaml` (the API then answers with an error); `1` after |
 | Change the model | `MODEL` in `ai/llm/values.yaml`; the API keeps calling it `local` |
 | Change `ai/gateway/config.yaml` or `ai/search/settings.yml` | merge, then `kubectl -n ai rollout restart deploy/<gateway or search>` (pods don't restart on a ConfigMap change) |
+| Reset the sandbox | `kubectl -n ai rollout restart deploy/sandbox` (drops every file, package and variable) |
 | Quick answer without thinking | end the prompt with `/no_think` (Qwen3) |
-| Long answers | `"stream": true`: Cloudflare drops a request with no first byte after 100s |
+| Long answers, any call with tools | `"stream": true`: Cloudflare drops a request with no first byte after 100s |
 
 ## Data
 
