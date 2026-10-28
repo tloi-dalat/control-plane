@@ -7,13 +7,13 @@ helmGlobals:
 helmCharts:
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
-    version: 0.2.0
+    version: 0.3.0
     namespace: platform
     releaseName: url-shortener
     valuesFile: url-shortener.yaml
   - repo: oci://ghcr.io/tloi-dalat/charts
     name: app
-    version: 0.2.0
+    version: 0.3.0
     namespace: platform
     releaseName: url-shortener-admin
     valuesFile: url-shortener-admin.yaml
