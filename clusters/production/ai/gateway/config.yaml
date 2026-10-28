@@ -15,7 +15,7 @@ mcp_servers:
     url: http://browser-mcp.ai.svc.cluster.local:11235/mcp/sse
     transport: sse
     auth_type: bearer_token
-    auth_value: os.environ/BROWSER_TOKEN
+    auth_value: os.environ/BROWSER_MCP_TOKEN
     allowed_tools: [md]
   sandbox:
     url: http://sandbox-mcp.ai.svc.cluster.local:4040/mcp

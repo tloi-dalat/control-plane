@@ -101,7 +101,7 @@ In Infisical (project TLOI, environment `<env>`):
 | `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `URL_SHORTENER_PASSWORD`, `SQLLAB_PASSWORD`, `BACKUP_PASSWORD` |
 | `/platform/sqllab` | development: `PASSWORD_replica`; production: `PASSWORD_mariadb` (= `/database/mariadb` → `SQLLAB_PASSWORD`), `PASSWORD_postgres` (= `/database/postgres` → `SQLLAB_PASSWORD`) |
 | `/platform/newsletter` (production) | `LISTMONK_db__password` (= `/database/postgres` → `NEWSLETTER_PASSWORD`), `LISTMONK_ADMIN_PASSWORD` (first start only) |
-| `/ai/gateway` (production) | `LITELLM_MASTER_KEY` (the API key for `ai.tloi.vn`; must start with `sk-`), `SEARCH_MCP_TOKEN` (= `/ai/search` → `MCP_HTTP_AUTH_TOKEN`), `BROWSER_TOKEN` (= `/ai/browser` → `CRAWL4AI_API_TOKEN`), `SANDBOX_MCP_TOKEN` (= `/ai/sandbox` → `MCP_TOKEN`) |
+| `/ai/gateway` (production) | `LITELLM_MASTER_KEY` (the API key for `ai.tloi.vn`; must start with `sk-`), `SEARCH_MCP_TOKEN` (= `/ai/search` → `MCP_HTTP_AUTH_TOKEN`), `BROWSER_MCP_TOKEN` (= `/ai/browser` → `CRAWL4AI_API_TOKEN`), `SANDBOX_MCP_TOKEN` (= `/ai/sandbox` → `MCP_TOKEN`) |
 | `/ai/search` (production) | `SEARXNG_SECRET`, `MCP_HTTP_AUTH_TOKEN` (both random) |
 | `/ai/browser` (production) | `CRAWL4AI_API_TOKEN` (random) |
 | `/ai/sandbox` (production) | `JUPYTER_TOKEN`, `MCP_TOKEN` (both random) |
