@@ -4,8 +4,8 @@ image:
   tag: 2026.10.17-1c10abe2d
 env:
   SEARXNG_BASE_URL: http://search.ai.svc.cluster.local:8080/
-envFrom:
-  - secretRef: { name: search-env }
+  SEARXNG_SECRET:
+    valueFrom: { secretKeyRef: { name: search-env, key: SEARXNG_SECRET } }
 ports:
   - { name: http, containerPort: 8080 }
 probes:
@@ -24,6 +24,6 @@ networkPolicy:
   policyTypes: [Ingress]
   ingress:
     - from:
-        - podSelector: { matchLabels: { app.kubernetes.io/name: gateway } }
+        - podSelector: { matchLabels: { app.kubernetes.io/name: search-mcp } }
       ports:
         - { port: 8080, protocol: TCP }

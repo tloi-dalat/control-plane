@@ -1,0 +1,48 @@
+replicaCount: 1
+image:
+  repository: quay.io/jupyter/scipy-notebook
+  tag: 2026-10-26
+strategy: { type: Recreate }
+command: ["bash", "-c"]
+args:
+  - |
+    pip install --no-cache-dir jupyter-collaboration==5.0.4 jupyter-mcp-tools==0.1.8 &&
+      exec start-notebook.py --ServerApp.allow_origin='*' --ServerApp.disable_check_xsrf=True
+env:
+  JUPYTER_TOKEN:
+    valueFrom: { secretKeyRef: { name: sandbox-env, key: JUPYTER_TOKEN } }
+ports:
+  - { name: http, containerPort: 8888 }
+probes:
+  readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
+  liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6, initialDelaySeconds: 120 }
+resources:
+  requests: { cpu: 50m, memory: 512Mi, ephemeral-storage: 1Gi }
+  limits: { cpu: "2", memory: 4Gi, ephemeral-storage: 10Gi }
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 100
+  runAsNonRoot: true
+  seccompProfile: { type: RuntimeDefault }
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities: { drop: [ALL] }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: sandbox-mcp } }
+      ports:
+        - { port: 8888, protocol: TCP }
+  egress:
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { k8s-app: kube-dns } }
+      ports:
+        - { port: 53, protocol: UDP }
+        - { port: 53, protocol: TCP }
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, 100.64.0.0/10]

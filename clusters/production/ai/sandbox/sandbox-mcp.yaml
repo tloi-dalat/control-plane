@@ -1,0 +1,41 @@
+replicaCount: 1
+image:
+  repository: datalayer/jupyter-mcp-server
+  tag: 2.2.4
+args: ["start"]
+env:
+  TRANSPORT: streamable-http
+  PORT: "4040"
+  JUPYTER_URL: http://sandbox.ai.svc.cluster.local:8888
+  ALLOW_IMG_OUTPUT: "false"
+  JUPYTER_TOKEN:
+    valueFrom: { secretKeyRef: { name: sandbox-env, key: JUPYTER_TOKEN } }
+  MCP_TOKEN:
+    valueFrom: { secretKeyRef: { name: sandbox-env, key: MCP_TOKEN } }
+ports:
+  - { name: http, containerPort: 4040 }
+probes:
+  readiness: { tcpSocket: { port: http }, periodSeconds: 10 }
+  liveness: { tcpSocket: { port: http }, periodSeconds: 20, failureThreshold: 6 }
+resources:
+  requests: { cpu: 20m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 512Mi }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: gateway } }
+      ports:
+        - { port: 4040, protocol: TCP }
+  egress:
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { k8s-app: kube-dns } }
+      ports:
+        - { port: 53, protocol: UDP }
+        - { port: 53, protocol: TCP }
+    - to:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: sandbox } }
+      ports:
+        - { port: 8888, protocol: TCP }

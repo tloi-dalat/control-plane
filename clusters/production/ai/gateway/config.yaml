@@ -4,19 +4,29 @@ model_list:
       model: ollama_chat/local
       api_base: http://llm.ai.svc.cluster.local:11434
 
-search_tools:
-  - search_tool_name: searxng
-    litellm_params:
-      search_provider: searxng
-      api_base: http://search.ai.svc.cluster.local:8080
+mcp_servers:
+  search:
+    url: http://search-mcp.ai.svc.cluster.local:3000/mcp
+    transport: http
+    auth_type: bearer_token
+    auth_value: os.environ/SEARCH_MCP_TOKEN
+    allowed_tools: [searxng_web_search, web_url_read]
+  browser:
+    url: http://browser-mcp.ai.svc.cluster.local:11235/mcp/sse
+    transport: sse
+    auth_type: bearer_token
+    auth_value: os.environ/BROWSER_MCP_TOKEN
+    allowed_tools: [md]
+  sandbox:
+    url: http://sandbox-mcp.ai.svc.cluster.local:4040/mcp
+    transport: http
+    auth_type: bearer_token
+    auth_value: os.environ/SANDBOX_MCP_TOKEN
+    allowed_tools: [use_notebook, execute_code, list_files]
 
 litellm_settings:
   drop_params: true
   request_timeout: 300
-  callbacks: ["websearch_interception"]
-  websearch_interception_params:
-    enabled_providers: [ollama_chat]
-    search_tool_name: searxng
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY

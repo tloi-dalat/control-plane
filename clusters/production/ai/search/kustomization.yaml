@@ -11,6 +11,12 @@ helmCharts:
     namespace: ai
     releaseName: search
     valuesFile: values.yaml
+  - repo: oci://ghcr.io/tloi-dalat/charts
+    name: app
+    version: 0.3.0
+    namespace: ai
+    releaseName: search-mcp
+    valuesFile: search-mcp.yaml
 configMapGenerator:
   - name: search-config
     namespace: ai

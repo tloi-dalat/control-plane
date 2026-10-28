@@ -47,6 +47,22 @@ kubectl get nodes                         # Ready
 Adjust `system-reserved` in the k3s config to what runs outside Kubernetes (mailcow, Docker).
 If the host uses systemd-resolved (`nameserver 127.0.0.53`), keep `resolv-conf` as in the production config.
 
+Production only: gVisor, the kernel `ai/sandbox` and `ai/browser` run on (RuntimeClass `gvisor`).
+
+```bash
+curl -fsSL https://gvisor.dev/archive.key | sudo gpg --dearmor -o /usr/share/keyrings/gvisor-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases release main" \
+  | sudo tee /etc/apt/sources.list.d/gvisor.list
+sudo apt-get update && sudo apt-get install -y runsc
+sudo tee /var/lib/rancher/k3s/agent/etc/containerd/config-v3.toml.tmpl <<'EOF'
+{{ template "base" . }}
+
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc]
+  runtime_type = "io.containerd.runsc.v1"
+EOF
+sudo systemctl restart k3s
+```
+
 ## 3. ArgoCD
 
 ```bash
@@ -85,8 +101,10 @@ In Infisical (project TLOI, environment `<env>`):
 | `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `URL_SHORTENER_PASSWORD`, `SQLLAB_PASSWORD`, `BACKUP_PASSWORD` |
 | `/platform/sqllab` | development: `PASSWORD_replica`; production: `PASSWORD_mariadb` (= `/database/mariadb` → `SQLLAB_PASSWORD`), `PASSWORD_postgres` (= `/database/postgres` → `SQLLAB_PASSWORD`) |
 | `/platform/newsletter` (production) | `LISTMONK_db__password` (= `/database/postgres` → `NEWSLETTER_PASSWORD`), `LISTMONK_ADMIN_PASSWORD` (first start only) |
-| `/ai/gateway` (production) | `LITELLM_MASTER_KEY` (the API key for `ai.tloi.vn`; must start with `sk-`) |
-| `/ai/search` (production) | `SEARXNG_SECRET` (random) |
+| `/ai/gateway` (production) | `LITELLM_MASTER_KEY` (the API key for `ai.tloi.vn`; must start with `sk-`), `SEARCH_MCP_TOKEN` (= `/ai/search` → `MCP_HTTP_AUTH_TOKEN`), `BROWSER_MCP_TOKEN` (= `/ai/browser` → `CRAWL4AI_API_TOKEN`), `SANDBOX_MCP_TOKEN` (= `/ai/sandbox` → `MCP_TOKEN`) |
+| `/ai/search` (production) | `SEARXNG_SECRET`, `MCP_HTTP_AUTH_TOKEN` (both random) |
+| `/ai/browser` (production) | `CRAWL4AI_API_TOKEN` (random) |
+| `/ai/sandbox` (production) | `JUPYTER_TOKEN`, `MCP_TOKEN` (both random) |
 | `/platform/url-shortener` (production) | `DB_PASSWORD` (= `/database/postgres` → `URL_SHORTENER_PASSWORD`), `INITIAL_API_KEY` (Shlink API key, also used by the dashboard); optional `GEOLITE_LICENSE_KEY` (visit locations) |
 
 - Keys are named after the Django setting they set (`.k8s.settings.py` in the site repo).
