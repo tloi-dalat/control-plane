@@ -1,0 +1,22 @@
+model_list:
+  - model_name: local
+    litellm_params:
+      model: ollama_chat/local
+      api_base: http://llm.ai.svc.cluster.local:11434
+
+search_tools:
+  - search_tool_name: searxng
+    litellm_params:
+      search_provider: searxng
+      api_base: http://search.ai.svc.cluster.local:8080
+
+litellm_settings:
+  drop_params: true
+  request_timeout: 300
+  callbacks: ["websearch_interception"]
+  websearch_interception_params:
+    enabled_providers: [ollama_chat]
+    search_tool_name: searxng
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

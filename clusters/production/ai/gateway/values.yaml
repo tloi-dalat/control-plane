@@ -1,0 +1,28 @@
+replicaCount: 1
+image:
+  repository: ghcr.io/berriai/litellm
+  tag: v1.106.0
+args: ["--config", "/app/config/config.yaml", "--port", "4000"]
+envFrom:
+  - secretRef: { name: gateway-env }
+ports:
+  - { name: http, containerPort: 4000 }
+probes:
+  readiness: { httpGet: { path: /health/readiness, port: http }, periodSeconds: 10 }
+  liveness: { httpGet: { path: /health/liveliness, port: http }, periodSeconds: 20, failureThreshold: 6, initialDelaySeconds: 30 }
+resources:
+  requests: { cpu: 50m, memory: 256Mi }
+  limits: { cpu: 500m, memory: 1Gi }
+volumes:
+  - name: config
+    configMap: { name: gateway-config }
+volumeMounts:
+  - { name: config, mountPath: /app/config, readOnly: true }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: cloudflared } }
+      ports:
+        - { port: 4000, protocol: TCP }

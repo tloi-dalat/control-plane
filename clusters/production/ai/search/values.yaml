@@ -1,0 +1,29 @@
+replicaCount: 1
+image:
+  repository: searxng/searxng
+  tag: 2026.10.17-1c10abe2d
+env:
+  SEARXNG_BASE_URL: http://search.ai.svc.cluster.local:8080/
+envFrom:
+  - secretRef: { name: search-env }
+ports:
+  - { name: http, containerPort: 8080 }
+probes:
+  readiness: { httpGet: { path: /healthz, port: http }, periodSeconds: 10 }
+  liveness: { httpGet: { path: /healthz, port: http }, periodSeconds: 20, failureThreshold: 6 }
+resources:
+  requests: { cpu: 20m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 512Mi }
+volumes:
+  - name: config
+    configMap: { name: search-config }
+volumeMounts:
+  - { name: config, mountPath: /etc/searxng/settings.yml, subPath: settings.yml, readOnly: true }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: gateway } }
+      ports:
+        - { port: 8080, protocol: TCP }

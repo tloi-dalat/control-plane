@@ -28,6 +28,7 @@ sudo install -d /home/tloi/data/platform/sqllab
 sudo install -d -o 26 -g 26 /home/tloi/data/database/postgres-{1,2}
 sudo install -d -o 1000 -g 2000 /home/tloi/data/monitoring/prometheus
 sudo install -d -o 1001 -g 1001 /home/tloi/data/platform/newsletter
+sudo install -d /home/tloi/data/ai/llm
 ```
 
 Moving from another server: copy `media` and `problems` into those directories first.
@@ -84,6 +85,8 @@ In Infisical (project TLOI, environment `<env>`):
 | `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `URL_SHORTENER_PASSWORD`, `SQLLAB_PASSWORD`, `BACKUP_PASSWORD` |
 | `/platform/sqllab` | development: `PASSWORD_replica`; production: `PASSWORD_mariadb` (= `/database/mariadb` → `SQLLAB_PASSWORD`), `PASSWORD_postgres` (= `/database/postgres` → `SQLLAB_PASSWORD`) |
 | `/platform/newsletter` (production) | `LISTMONK_db__password` (= `/database/postgres` → `NEWSLETTER_PASSWORD`), `LISTMONK_ADMIN_PASSWORD` (first start only) |
+| `/ai/gateway` (production) | `LITELLM_MASTER_KEY` (the API key for `ai.tloi.vn`; must start with `sk-`) |
+| `/ai/search` (production) | `SEARXNG_SECRET` (random) |
 | `/platform/url-shortener` (production) | `DB_PASSWORD` (= `/database/postgres` → `URL_SHORTENER_PASSWORD`), `INITIAL_API_KEY` (Shlink API key, also used by the dashboard); optional `GEOLITE_LICENSE_KEY` (visit locations) |
 
 - Keys are named after the Django setting they set (`.k8s.settings.py` in the site repo).
