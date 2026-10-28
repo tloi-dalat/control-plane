@@ -22,6 +22,8 @@ mcp_servers:
     transport: http
     auth_type: bearer_token
     auth_value: os.environ/SANDBOX_MCP_TOKEN
+    static_headers:
+      Host: localhost:4040
     allowed_tools: [use_notebook, execute_code, list_files]
 
 litellm_settings:

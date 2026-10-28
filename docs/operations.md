@@ -140,7 +140,7 @@ Production only, in namespace `ai`. `ai/llm` runs Ollama with one model (`MODEL`
 |---|---|---|
 | `search` | `search-mcp` in `ai/search` (mcp-searxng) | web search through SearXNG, read a page or PDF (public URLs only) |
 | `browser` | `ai/browser` (Crawl4AI, headless Chromium on gVisor), Service `browser-mcp` | read pages built by JavaScript, crawl |
-| `sandbox` | `sandbox-mcp` in `ai/sandbox` (Jupyter MCP Server) | run Python and shell (`!cmd`) in a Jupyter kernel on gVisor: no secrets, no access to the cluster, 2 CPUs, 4 GiB, shared by every caller and wiped on restart |
+| `sandbox` | `sandbox-mcp` in `ai/sandbox` (Jupyter MCP Server) | run Python and shell (`!cmd`) in a Jupyter kernel on gVisor: no secrets, no access to the cluster, 2 CPUs, 4 GiB, shared by every caller and wiped on restart. Jupyter MCP Server only accepts `Host: localhost`, so the gateway sends that header (`static_headers` in `config.yaml`) |
 
 | What | Where |
 |---|---|
