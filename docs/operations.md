@@ -147,6 +147,7 @@ Production only, in namespace `ai`. `ai/llm` runs Ollama with one model (`MODEL`
 |---|---|
 | Before a contest | `replicaCount: 0` in `ai/llm/values.yaml` (the API then answers with an error); `1` after |
 | Change the model | `MODEL` in `ai/llm/values.yaml`; the API keeps calling it `local` |
+| Change `ai/gateway/config.yaml` or `ai/search/settings.yml` | merge, then `kubectl -n ai rollout restart deploy/<gateway or search>` (pods don't restart on a ConfigMap change) |
 | Quick answer without thinking | end the prompt with `/no_think` (Qwen3) |
 | Long answers | `"stream": true`: Cloudflare drops a request with no first byte after 100s |
 
