@@ -132,7 +132,7 @@ mariadb-operator in `clusters/<env>/database/` (`mariadb-operator/`, `mariadb/`)
 ## AI
 
 Production only, in namespace `ai`. `ai/llm` runs Ollama with one model (`MODEL` in `values.yaml`, default
-`qwen3:8b`), limited to 4 of the 12 CPUs and 12 GiB. On start it downloads the model into `/home/tloi/data/ai/llm`
+`qwen3:8b`). On start it downloads the model into `/home/tloi/data/ai/llm`
 (not backed up) and builds `local` from it with `THREADS` (keep equal to the CPU limit) and `CONTEXT`. `ai/gateway`
 (LiteLLM) is the only way in. It also runs tools from three MCP servers (`mcp_servers` in `config.yaml`):
 
