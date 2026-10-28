@@ -14,7 +14,7 @@ args:
     wait
 env:
   MODEL: qwen3:8b
-  THREADS: "4"
+  THREADS: "6"
   CONTEXT: "16384"
   OLLAMA_HOST: 0.0.0.0:11434
   OLLAMA_KEEP_ALIVE: 24h
@@ -27,7 +27,7 @@ probes:
   liveness: { httpGet: { path: /, port: http }, periodSeconds: 20, failureThreshold: 6 }
 resources:
   requests: { cpu: 100m, memory: 1Gi }
-  limits: { cpu: "4", memory: 12Gi }
+  limits: { cpu: "6", memory: 12Gi }
 volumes:
   - name: data
     persistentVolumeClaim: { claimName: llm }
