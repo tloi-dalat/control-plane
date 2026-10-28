@@ -24,7 +24,7 @@ metadata:
   name: data
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
-    k8up.io/backup-restic-args: '["--exclude", "/data/data/database", "--exclude", "/data/data/monitoring"]'
+    k8up.io/backup-restic-args: '["--exclude", "/data/data/database", "--exclude", "/data/data/monitoring", "--exclude", "/data/data/ai/llm"]'
 spec:
   storageClassName: local-static
   volumeName: backup-data

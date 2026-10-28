@@ -1,0 +1,43 @@
+replicaCount: 1
+image:
+  repository: ollama/ollama
+  tag: 0.40.11
+strategy: { type: Recreate }
+command: ["/bin/sh", "-c"]
+args:
+  - |
+    ollama serve &
+    sleep 5
+    ollama pull "$MODEL" &&
+      printf 'FROM %s\nPARAMETER num_thread %s\nPARAMETER num_ctx %s\n' "$MODEL" "$THREADS" "$CONTEXT" > /tmp/Modelfile &&
+      ollama create local -f /tmp/Modelfile
+    wait
+env:
+  MODEL: qwen3:8b
+  THREADS: "4"
+  CONTEXT: "16384"
+  OLLAMA_HOST: 0.0.0.0:11434
+  OLLAMA_KEEP_ALIVE: 24h
+  OLLAMA_MAX_LOADED_MODELS: "1"
+  OLLAMA_NUM_PARALLEL: "1"
+ports:
+  - { name: http, containerPort: 11434 }
+probes:
+  readiness: { httpGet: { path: /, port: http }, periodSeconds: 10 }
+  liveness: { httpGet: { path: /, port: http }, periodSeconds: 20, failureThreshold: 6 }
+resources:
+  requests: { cpu: 100m, memory: 1Gi }
+  limits: { cpu: "4", memory: 12Gi }
+volumes:
+  - name: data
+    persistentVolumeClaim: { claimName: llm }
+volumeMounts:
+  - { name: data, mountPath: /root/.ollama }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app.kubernetes.io/name: gateway } }
+      ports:
+        - { port: 11434, protocol: TCP }

@@ -129,6 +129,27 @@ mariadb-operator in `clusters/<env>/database/` (`mariadb-operator/`, `mariadb/`)
 | Allow an email or team | terraform-cloudflare, `control-plane-<env>.yaml` → `access.<hostname>` |
 | Show another database | A `Grant` like `sqllab-online-judge` in `database/mariadb/sqllab.yaml` |
 
+## AI
+
+Production only, in namespace `ai`. `ai/llm` runs Ollama with one model (`MODEL` in `values.yaml`, default
+`qwen3:8b`), limited to 4 of the 12 CPUs and 12 GiB. On start it downloads the model into `/home/tloi/data/ai/llm`
+(not backed up) and builds `local` from it with `THREADS` (keep equal to the CPU limit) and `CONTEXT`. `ai/gateway`
+(LiteLLM) is the API; `ai/search` (SearXNG) is the web search it uses. Only the gateway is reachable from outside.
+
+| What | Where |
+|---|---|
+| API | `https://ai.tloi.vn`, key `LITELLM_MASTER_KEY` from Infisical `/ai/gateway`, model `local` |
+| OpenAI format | `POST /v1/chat/completions` (any OpenAI SDK: base URL `https://ai.tloi.vn/v1`) |
+| Gemini format | `POST /v1beta/models/local:generateContent` (Google GenAI SDK: `GOOGLE_GEMINI_BASE_URL=https://ai.tloi.vn`) |
+| Web search | `POST /v1/search/searxng` with `{"query": "..."}`; or send a `web_search` tool in a chat request and the gateway searches for the model |
+
+| Task | How |
+|---|---|
+| Before a contest | `replicaCount: 0` in `ai/llm/values.yaml` (the API then answers with an error); `1` after |
+| Change the model | `MODEL` in `ai/llm/values.yaml`; the API keeps calling it `local` |
+| Quick answer without thinking | end the prompt with `/no_think` (Qwen3) |
+| Long answers | `"stream": true`: Cloudflare drops a request with no first byte after 100s |
+
 ## Data
 
 - Media and problem data: `/home/tloi/data/online-judge`. Database: `/home/tloi/data/database`. Production backs
