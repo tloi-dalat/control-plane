@@ -15,7 +15,7 @@ spec:
             summary: "Database backup failed"
             description: "The last nightly dump of `database` didn't succeed. Check: `kubectl -n database get backups.k8up.io`"
         - alert: DatabaseBackupMissing
-          expr: increase(k8up_jobs_successful_counter{exported_namespace="database", jobType="backup"}[26h]) < 1
+          expr: sum by (exported_namespace) (increase(k8up_jobs_successful_counter{exported_namespace="database", jobType="backup"}[26h])) < 1
           for: 1h
           labels:
             severity: critical
@@ -24,7 +24,7 @@ spec:
             summary: "No database backup for 26h"
             description: "The last successful dump of `database` is older than a day."
         - alert: DatabaseBackupSucceeded
-          expr: increase(k8up_jobs_successful_counter{exported_namespace="database", jobType="backup"}[1h]) > 0
+          expr: sum by (exported_namespace) (increase(k8up_jobs_successful_counter{exported_namespace="database", jobType="backup"}[1h])) > 0
           labels:
             severity: report
             namespace: database

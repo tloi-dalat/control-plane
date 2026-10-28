@@ -15,7 +15,7 @@ spec:
             summary: "Data backup failed"
             description: "The last nightly backup of `/home/tloi/data` didn't succeed. Check: `kubectl -n backup get backups.k8up.io`"
         - alert: DataBackupMissing
-          expr: increase(k8up_jobs_successful_counter{exported_namespace="backup", jobType="backup"}[26h]) < 1
+          expr: sum by (exported_namespace) (increase(k8up_jobs_successful_counter{exported_namespace="backup", jobType="backup"}[26h])) < 1
           for: 1h
           labels:
             severity: critical
@@ -24,7 +24,7 @@ spec:
             summary: "No data backup for 26h"
             description: "The last successful backup of `/home/tloi/data` is older than a day."
         - alert: DataBackupSucceeded
-          expr: increase(k8up_jobs_successful_counter{exported_namespace="backup", jobType="backup"}[1h]) > 0
+          expr: sum by (exported_namespace) (increase(k8up_jobs_successful_counter{exported_namespace="backup", jobType="backup"}[1h])) > 0
           labels:
             severity: report
             namespace: backup
