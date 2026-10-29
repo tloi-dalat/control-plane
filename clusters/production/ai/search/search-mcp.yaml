@@ -1,4 +1,4 @@
-replicaCount: 0
+replicaCount: 1
 image:
   repository: isokoliuk/mcp-searxng
   tag: 2.3.0

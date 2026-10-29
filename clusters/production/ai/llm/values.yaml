@@ -1,4 +1,4 @@
-replicaCount: 0
+replicaCount: 1
 image:
   repository: ollama/ollama
   tag: 0.40.11
