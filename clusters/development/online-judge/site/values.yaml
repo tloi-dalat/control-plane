@@ -6,7 +6,7 @@ env:
   SITE_FULL_URL: https://oj.tloi.shop
   DMOJ_CANONICAL: oj.tloi.shop
   SITE_NAME: TLOJ
-  DEBUG: "false"
+  DEBUG: "true"
   REGISTRATION_OPEN: "true"
   DATABASE_HOST: mariadb-primary.database.svc.cluster.local
   DATABASE_PORT: "3306"
@@ -19,8 +19,15 @@ env:
   MEDIA_ROOT: /media
   BRIDGED_DJANGO_CONNECT: bridge:9998
   EVENT_DAEMON_POST: ws://event:15101/
-  EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+  EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+  EMAIL_HOST: mail.tloi.vn
+  EMAIL_PORT: "587"
+  EMAIL_USE_TLS: "true"
+  EMAIL_HOST_USER: no-reply@tloi.vn
+  DEFAULT_FROM_EMAIL: Thang Long Da Lat Olympiad in Informatics <no-reply@tloi.vn>
+  SERVER_EMAIL: Thang Long Da Lat Olympiad in Informatics <no-reply@tloi.vn>
   ADMINS: kitsune:minhquandinhcao@gmail.com
+  VNOJ_POLYGON_API_USERNAME: tloj
   LOG_LEVEL: INFO
 
 envFrom:
