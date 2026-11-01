@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/tloi-dalat/online-judge-event
-  tag: main-a5b9dd0
+  tag: main-77230a5
 replicaCount: 1
 strategy: { type: Recreate }
 ports:
