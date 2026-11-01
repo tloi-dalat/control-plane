@@ -2,7 +2,7 @@ kind: StatefulSet
 replicaCount: 1
 image:
   repository: ghcr.io/tloi-dalat/online-judge-judge
-  tag: main-773eeff
+  tag: main-0d8be87
 args: ["run", "-c", "/config/judge.yml", "bridge"]
 env:
   DMOJ_SKIP_DEV_INSTALL: "1"
