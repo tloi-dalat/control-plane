@@ -1,31 +1,22 @@
 image:
-  repository: dbgate/dbgate
-  tag: 7.3.2
+  repository: bytebase/bytebase
+  tag: 3.24.0
 strategy: { type: Recreate }
-env:
-  SKIP_ALL_AUTH: "1"
-  CONNECTIONS: replica
-  LABEL_replica: MariaDB replica
-  ENGINE_replica: mysql@dbgate-plugin-mysql
-  SERVER_replica: mariadb-secondary.database.svc.cluster.local
-  PORT_replica: "3306"
-  USER_replica: sqllab
-  READONLY_replica: "1"
-envFrom:
-  - secretRef: { name: sqllab-env }
+args: ["--port", "3000", "--data", "/var/opt/bytebase"]
 ports:
   - { name: http, containerPort: 3000 }
 probes:
-  readiness: { httpGet: { path: /, port: http }, periodSeconds: 10 }
-  liveness: { httpGet: { path: /, port: http }, periodSeconds: 20, failureThreshold: 6 }
+  startup: { httpGet: { path: /healthz, port: http }, periodSeconds: 10, failureThreshold: 30 }
+  readiness: { httpGet: { path: /healthz, port: http }, periodSeconds: 10 }
+  liveness: { httpGet: { path: /healthz, port: http }, periodSeconds: 30, timeoutSeconds: 10, failureThreshold: 6 }
 resources:
-  requests: { cpu: 20m, memory: 128Mi }
-  limits: { cpu: 500m, memory: 512Mi }
+  requests: { cpu: 100m, memory: 512Mi }
+  limits: { cpu: "1", memory: 2Gi }
 volumes:
   - name: data
     persistentVolumeClaim: { claimName: sqllab }
 volumeMounts:
-  - { name: data, mountPath: /root/.dbgate }
+  - { name: data, mountPath: /var/opt/bytebase }
 networkPolicy:
   enabled: true
   policyTypes: [Ingress]

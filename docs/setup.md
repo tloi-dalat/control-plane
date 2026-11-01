@@ -95,11 +95,11 @@ In Infisical (project TLOI, environment `<env>`):
 |---|---|
 | `/online-judge/site` | `SECRET_KEY`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET`, `EVENT_DAEMON_SUBMISSION_KEY`, `EVENT_DAEMON_CONTEST_KEY`, `EVENT_DAEMON_TICKET_KEY`; optional `FERNET_KEYS` (older keys for 2FA data); production also `EMAIL_HOST_PASSWORD`, `VNOJ_POLYGON_API_KEY`, `VNOJ_POLYGON_API_SECRET`, `MOSS_API_KEY`, `DISCORD_WEBHOOK_*` |
 | `/online-judge/judge` | `DMOJ_JUDGE_KEY` |
-| `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/site` → `DATABASE_PASSWORD`), `SQLLAB_PASSWORD`; production also `BACKUP_PASSWORD` |
+| `/database/mariadb` | `MARIADB_ROOT_PASSWORD`, `MARIADB_REPL_PASSWORD`, `ONLINE_JUDGE_PASSWORD` (= `/online-judge/site` → `DATABASE_PASSWORD`), development `SQLLAB_READ_PASSWORD`, `SQLLAB_MIGRATE_PASSWORD`; production `SQLLAB_PASSWORD`, `BACKUP_PASSWORD` |
 | `/backup` (production) | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (R2 token for bucket `tloi-backups`), `RESTIC_PASSWORD` (encrypts file backups; keep a copy outside Infisical) |
 | `/monitoring/prometheus` (production) | `DISCORD_WEBHOOK_ALERT_URL` (alerts), `DISCORD_WEBHOOK_SLACK_REPORT_URL` (reports: a webhook URL ending in `/slack`), `DISCORD_ALERT_PREFIX` (text before every alert, e.g. a role mention `<@&role-id>`; can be empty), `DISCORD_ALERT_FIRING_PREFIX` / `DISCORD_ALERT_RESOLVED_PREFIX` (title icon, a Unicode emoji; can be empty), `DISCORD_REPORT_INFO_PREFIX` (report title icon; can be empty), `DISCORD_REPORT_PREFIX` (text before every report, e.g. a mention; can be empty) |
 | `/database/postgres` (production) | `NEWSLETTER_PASSWORD`, `URL_SHORTENER_PASSWORD`, `SQLLAB_PASSWORD`, `BACKUP_PASSWORD` |
-| `/platform/sqllab` | development: `PASSWORD_replica`; production: `PASSWORD_mariadb` (= `/database/mariadb` → `SQLLAB_PASSWORD`), `PASSWORD_postgres` (= `/database/postgres` → `SQLLAB_PASSWORD`) |
+| `/platform/sqllab` (production) | `PASSWORD_mariadb` (= `/database/mariadb` → `SQLLAB_PASSWORD`), `PASSWORD_postgres` (= `/database/postgres` → `SQLLAB_PASSWORD`) |
 | `/platform/newsletter` (production) | `LISTMONK_db__password` (= `/database/postgres` → `NEWSLETTER_PASSWORD`), `LISTMONK_ADMIN_PASSWORD` (first start only) |
 | `/ai/gateway` (production) | `LITELLM_MASTER_KEY` (the API key for `ai.tloi.vn`; must start with `sk-`), `SEARCH_MCP_TOKEN` (= `/ai/search` → `MCP_HTTP_AUTH_TOKEN`), `BROWSER_MCP_TOKEN` (= `/ai/browser` → `CRAWL4AI_API_TOKEN`), `SANDBOX_MCP_TOKEN` (= `/ai/sandbox` → `MCP_TOKEN`) |
 | `/ai/search` (production) | `SEARXNG_SECRET`, `MCP_HTTP_AUTH_TOKEN` (both random) |
