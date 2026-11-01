@@ -1,22 +1,22 @@
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: User
 metadata:
-  name: sqllab-migrate
+  name: sqllab-write
 spec:
-  name: sqllab_migrate
+  name: sqllab_write
   mariaDbRef: { name: mariadb }
   host: "10.42.%"
-  passwordSecretKeyRef: { name: mariadb-env, key: SQLLAB_MIGRATE_PASSWORD }
+  passwordSecretKeyRef: { name: mariadb-env, key: SQLLAB_WRITE_PASSWORD }
   maxUserConnections: 10
   cleanupPolicy: Skip
 ---
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: Grant
 metadata:
-  name: sqllab-migrate
+  name: sqllab-write
 spec:
   mariaDbRef: { name: mariadb }
-  username: sqllab_migrate
+  username: sqllab_write
   host: "10.42.%"
   database: "*"
   table: "*"
@@ -26,10 +26,10 @@ spec:
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: Grant
 metadata:
-  name: sqllab-migrate-online-judge
+  name: sqllab-write-online-judge
 spec:
   mariaDbRef: { name: mariadb }
-  username: sqllab_migrate
+  username: sqllab_write
   host: "10.42.%"
   database: online_judge
   table: "*"
