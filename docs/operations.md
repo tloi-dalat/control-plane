@@ -124,15 +124,15 @@ mariadb-operator in `clusters/<env>/database/` (`mariadb-operator/`, `mariadb/`)
 `sqllab.tloi.shop` / `sqllab.tloi.vn`, behind Cloudflare Access. `argocd.tloi.shop` / `argocd.tloi.vn`: ArgoCD, read-only.
 
 - Development: Bytebase (Community), metadata in its embedded PostgreSQL under `/home/tloi/data/platform/sqllab`.
-  Queries go to `mariadb-secondary` as read-only `sqllab_read`; data patches go to `mariadb-primary` as `sqllab_migrate`
+  Queries go to `mariadb-secondary` as read-only `sqllab_read`; data patches go to `mariadb-primary` as `sqllab_write`
   and run only when someone other than the author rolls them out.
 - Production: DbGate on the MariaDB and PostgreSQL replicas as read-only `sqllab`.
 
 | Task | How |
 |---|---|
 | Allow an email or team | terraform-cloudflare, `control-plane-<env>.yaml` → `access.<hostname>` |
-| Show another database | Production: a `Grant` like `sqllab-online-judge` in `database/mariadb/sqllab.yaml`. Development: one in `sqllab-read.yaml` and one in `sqllab-migrate.yaml` |
-| Add a Bytebase instance | Settings → Instances: admin connection `mariadb-primary.database.svc.cluster.local:3306` as `sqllab_migrate`, read-only connection `mariadb-secondary.database.svc.cluster.local:3306` as `sqllab_read` |
+| Show another database | Production: a `Grant` like `sqllab-online-judge` in `database/mariadb/sqllab.yaml`. Development: one in `sqllab-read.yaml` and one in `sqllab-write.yaml` |
+| Add a Bytebase instance | Settings → Instances: admin connection `mariadb-primary.database.svc.cluster.local:3306` as `sqllab_write`, read-only connection `mariadb-secondary.database.svc.cluster.local:3306` as `sqllab_read` |
 | Gate patches | Environment `Prod`: manual rollout by Workspace Admin, DBA or Project Releaser. Authors get Project Developer; readers get SQL Editor Read User |
 | Back up Bytebase | Covered by the files backup (`/home/tloi/data/platform/sqllab`) |
 
