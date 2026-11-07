@@ -13,12 +13,11 @@ template:
         image: ghcr.io/actions/actions-runner:2.338.2
         command: ["/home/runner/run.sh"]
         env:
-          - { name: DATABASE_HOST, value: mariadb-primary.database.svc.cluster.local }
-          - { name: DATABASE_PORT, value: "3306" }
-          - { name: DATABASE_USER, value: atlas }
-          - name: DATABASE_PASSWORD
+          - { name: MARIADB_HOST, value: mariadb-primary.database.svc.cluster.local }
+          - { name: MARIADB_PORT, value: "3306" }
+          - name: MARIADB_PASSWORD
             valueFrom:
-              secretKeyRef: { name: atlas-runner-env, key: DATABASE_PASSWORD }
+              secretKeyRef: { name: atlas-runner-env, key: MARIADB_PASSWORD }
         resources:
           requests: { cpu: 100m, memory: 256Mi }
           limits: { cpu: "1", memory: 1Gi }
