@@ -18,6 +18,13 @@ template:
           - name: MARIADB_PASSWORD
             valueFrom:
               secretKeyRef: { name: atlas-runner-env, key: MARIADB_PASSWORD }
+          - { name: SQLLAB_URL, value: http://sqllab.platform.svc.cluster.local:3000 }
+          - name: SQLLAB_SERVICE_ACCOUNT
+            valueFrom:
+              secretKeyRef: { name: atlas-runner-env, key: SQLLAB_SERVICE_ACCOUNT }
+          - name: SQLLAB_SERVICE_KEY
+            valueFrom:
+              secretKeyRef: { name: atlas-runner-env, key: SQLLAB_SERVICE_KEY }
         resources:
           requests: { cpu: 100m, memory: 256Mi }
           limits: { cpu: "1", memory: 1Gi }
