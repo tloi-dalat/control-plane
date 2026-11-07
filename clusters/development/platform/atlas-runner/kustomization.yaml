@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: platform
+resources:
+  - secret.yaml
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - repo: oci://ghcr.io/actions/actions-runner-controller-charts
+    name: gha-runner-scale-set
+    version: 0.15.1
+    namespace: platform
+    releaseName: atlas-runner
+    valuesFile: values.yaml
