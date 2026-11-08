@@ -64,5 +64,5 @@ spec:
         inRoles: [pg_read_all_data, pg_write_all_data]
         passwordSecret: { name: postgres-sqllab-write }
   resources:
-    requests: { cpu: 100m, memory: 512Mi }
+    requests: { cpu: 100m, memory: 256Mi }
     limits: { memory: 1Gi }
