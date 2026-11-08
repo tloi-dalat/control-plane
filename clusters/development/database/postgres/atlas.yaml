@@ -1,0 +1,9 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: atlas
+spec:
+  name: atlas
+  owner: atlas
+  cluster: { name: postgres }
+  databaseReclaimPolicy: retain
