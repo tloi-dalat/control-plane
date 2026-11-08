@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mariadb
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/instance: mariadb }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: {}
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: online-judge } }
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: platform } }
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: cloudflared } }
+      ports:
+        - { port: 3306, protocol: TCP }

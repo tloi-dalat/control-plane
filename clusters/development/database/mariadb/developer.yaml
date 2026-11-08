@@ -1,0 +1,24 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: developer
+spec:
+  name: developer
+  mariaDbRef: { name: mariadb }
+  host: "10.42.%"
+  passwordSecretKeyRef: { name: mariadb-env, key: DEVELOPER_PASSWORD }
+  maxUserConnections: 30
+  cleanupPolicy: Skip
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: developer-online-judge
+spec:
+  mariaDbRef: { name: mariadb }
+  username: developer
+  host: "10.42.%"
+  database: online_judge
+  table: "*"
+  privileges: [SELECT, INSERT, UPDATE, DELETE]
+  cleanupPolicy: Skip
