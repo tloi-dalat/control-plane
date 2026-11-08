@@ -1,0 +1,66 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  instances: 2
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie
+  enablePDB: false
+  storage:
+    size: 20Gi
+    storageClass: local-static
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: 256MB
+      hot_standby_feedback: "on"
+  managed:
+    services:
+      disabledDefaultServices: [ro, r]
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata: { name: postgres-primary }
+          updateStrategy: patch
+        - selectorType: ro
+          serviceTemplate:
+            metadata: { name: postgres-secondary }
+          updateStrategy: patch
+    roles:
+      - name: atlas
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: 10
+        passwordSecret: { name: postgres-atlas }
+      - name: online_quiz
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+        passwordSecret: { name: postgres-online-quiz }
+      - name: developer
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: 30
+        passwordSecret: { name: postgres-developer }
+      - name: sqllab_read
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+        inRoles: [pg_read_all_data]
+        passwordSecret: { name: postgres-sqllab-read }
+      - name: sqllab_write
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+        inRoles: [pg_read_all_data, pg_write_all_data]
+        passwordSecret: { name: postgres-sqllab-write }
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 1Gi }

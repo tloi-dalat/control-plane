@@ -18,6 +18,11 @@ template:
           - name: MARIADB_PASSWORD
             valueFrom:
               secretKeyRef: { name: atlas-runner-env, key: MARIADB_PASSWORD }
+          - { name: POSTGRES_HOST, value: postgres-primary.database.svc.cluster.local }
+          - { name: POSTGRES_PORT, value: "5432" }
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef: { name: atlas-runner-env, key: POSTGRES_PASSWORD }
           - { name: SQLLAB_URL, value: http://sqllab.platform.svc.cluster.local:3000 }
           - name: SQLLAB_SERVICE_ACCOUNT
             valueFrom:
