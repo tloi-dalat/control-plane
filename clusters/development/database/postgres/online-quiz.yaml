@@ -4,6 +4,6 @@ metadata:
   name: online-quiz
 spec:
   name: online_quiz
-  owner: atlas
+  owner: online_quiz
   cluster: { name: postgres }
   databaseReclaimPolicy: retain
