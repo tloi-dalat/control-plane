@@ -34,6 +34,7 @@ spec:
         login: true
         inherit: true
         connectionLimit: 10
+        inRoles: [online_quiz]
         passwordSecret: { name: postgres-atlas }
       - name: online_quiz
         ensure: present
@@ -46,6 +47,7 @@ spec:
         login: true
         inherit: true
         connectionLimit: 30
+        inRoles: [pg_read_all_data, pg_write_all_data]
         passwordSecret: { name: postgres-developer }
       - name: sqllab_read
         ensure: present
