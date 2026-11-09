@@ -10,3 +10,10 @@ probes:
 resources:
   requests: { cpu: 200m, memory: 384Mi }
   limits: { cpu: "1", memory: 768Mi }
+
+migrate:
+  enabled: true
+  command: ["python", "manage.py", "migrate", "--noinput"]
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 512Mi }
