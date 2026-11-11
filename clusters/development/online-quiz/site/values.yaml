@@ -1,0 +1,58 @@
+url: https://oq.tloi.shop
+image:
+  repository: ghcr.io/tloi-dalat/online-quiz-site
+  tag: main-29719da
+replicaCount: 1
+strategy:
+  type: RollingUpdate
+  rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+
+env:
+  SITE_FULL_URL: https://oq.tloi.shop
+  DEBUG: "true"
+  DATABASE_HOST: postgres-primary.database.svc.cluster.local
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: online_quiz
+  DATABASE_USER: online_quiz
+  REDIS_HOST: redis
+  REDIS_CACHE_DB: "1"
+  LOG_LEVEL: INFO
+
+envFrom:
+  - secretRef: { name: site-env }
+
+ports:
+  - { name: http, containerPort: 8000 }
+probes:
+  readiness:
+    httpGet: { path: /healthz, port: http, httpHeaders: [{ name: Host, value: oq.tloi.shop }] }
+    periodSeconds: 10
+  liveness:
+    httpGet: { path: /healthz, port: http, httpHeaders: [{ name: Host, value: oq.tloi.shop }] }
+    periodSeconds: 20
+    failureThreshold: 6
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+
+resources:
+  requests: { cpu: 50m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 384Mi }
+
+migrate:
+  enabled: true
+  command: ["python", "manage.py", "migrate", "--noinput"]
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 384Mi }
+
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: cloudflared } }
+      ports:
+        - { port: 8000, protocol: TCP }

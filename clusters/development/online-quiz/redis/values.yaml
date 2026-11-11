@@ -1,0 +1,19 @@
+image:
+  repository: redis
+  tag: 7.4.11-alpine
+replicaCount: 1
+strategy: { type: Recreate }
+args: ["--requirepass", "$(REDIS_PASSWORD)", "--save", "", "--appendonly", "no",
+       "--maxmemory", "256mb", "--maxmemory-policy", "volatile-lru"]
+env:
+  REDIS_PASSWORD:
+    valueFrom: { secretKeyRef: { name: site-env, key: REDIS_PASSWORD } }
+ports:
+  - { name: redis, containerPort: 6379 }
+probes:
+  readiness: { tcpSocket: { port: redis }, periodSeconds: 10 }
+  liveness: { tcpSocket: { port: redis }, periodSeconds: 20, failureThreshold: 6 }
+podSecurityContext: { runAsUser: 999, runAsGroup: 1000, runAsNonRoot: true }
+resources:
+  requests: { cpu: 20m, memory: 64Mi }
+  limits: { cpu: 500m, memory: 320Mi }
