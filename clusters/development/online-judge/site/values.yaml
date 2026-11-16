@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/tloi-dalat/online-judge-site
-  tag: main-e0bd096
+  tag: main-019c3fc
 
 env:
   SITE_FULL_URL: https://oj.tloi.shop
