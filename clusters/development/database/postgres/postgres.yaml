@@ -22,11 +22,7 @@ spec:
       additional:
         - selectorType: rw
           serviceTemplate:
-            metadata:
-              name: postgres-primary
-              annotations:
-                tailscale.com/expose: "true"
-                tailscale.com/hostname: postgres-development
+            metadata: { name: postgres-primary }
           updateStrategy: patch
         - selectorType: ro
           serviceTemplate:

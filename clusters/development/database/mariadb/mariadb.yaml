@@ -24,11 +24,6 @@ spec:
         key: MARIADB_REPL_PASSWORD
         generate: false
       maxLagSeconds: 60
-  primaryService:
-    metadata:
-      annotations:
-        tailscale.com/expose: "true"
-        tailscale.com/hostname: mariadb-development
   storage:
     size: 20Gi
     storageClassName: local-static
