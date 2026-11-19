@@ -1,4 +1,4 @@
-orgAllowlist: github.com/tloi-dalat/terraform-cloudflare,github.com/tloi-dalat/terraform-github
+orgAllowlist: github.com/tloi-dalat/terraform-*
 atlantisUrl: https://atlantis.tloi.vn
 
 image:
