@@ -50,12 +50,21 @@ spec:
         connectionLimit: -1
         passwordSecret: { name: postgres-url-shortener }
       - name: sqllab
+        ensure: absent
+      - name: sqllab_read
         ensure: present
         login: true
         inherit: true
         connectionLimit: -1
         inRoles: [pg_read_all_data]
-        passwordSecret: { name: postgres-sqllab }
+        passwordSecret: { name: postgres-sqllab-read }
+      - name: sqllab_write
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+        inRoles: [pg_read_all_data, pg_write_all_data]
+        passwordSecret: { name: postgres-sqllab-write }
       - name: backup
         ensure: present
         login: true

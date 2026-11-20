@@ -1,0 +1,48 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: atlas
+spec:
+  name: atlas
+  mariaDbRef: { name: mariadb }
+  characterSet: utf8mb4
+  collate: utf8mb4_general_ci
+  cleanupPolicy: Skip
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: atlas
+spec:
+  name: atlas
+  mariaDbRef: { name: mariadb }
+  host: "10.42.%"
+  passwordSecretKeyRef: { name: mariadb-env, key: ATLAS_PASSWORD }
+  maxUserConnections: 10
+  cleanupPolicy: Skip
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: atlas-online-judge
+spec:
+  mariaDbRef: { name: mariadb }
+  username: atlas
+  host: "10.42.%"
+  database: online_judge
+  table: "*"
+  privileges: [ALL PRIVILEGES]
+  cleanupPolicy: Skip
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: atlas
+spec:
+  mariaDbRef: { name: mariadb }
+  username: atlas
+  host: "10.42.%"
+  database: atlas
+  table: "*"
+  privileges: [ALL PRIVILEGES]
+  cleanupPolicy: Skip
