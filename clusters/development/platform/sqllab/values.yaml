@@ -1,31 +1,42 @@
 image:
-  repository: bytebase/bytebase
-  tag: 3.24.0
+  repository: dbgate/dbgate
+  tag: 7.3.4
 strategy: { type: Recreate }
-args: ["--port", "3000", "--data", "/var/opt/bytebase"]
+env:
+  SKIP_ALL_AUTH: "1"
+  CONNECTIONS: mariadb,postgres
+  LABEL_mariadb: MariaDB replica
+  ENGINE_mariadb: mysql@dbgate-plugin-mysql
+  SERVER_mariadb: mariadb-secondary.database.svc.cluster.local
+  PORT_mariadb: "3306"
+  USER_mariadb: sqllab_read
+  READONLY_mariadb: "1"
+  LABEL_postgres: PostgreSQL replica
+  ENGINE_postgres: postgres@dbgate-plugin-postgres
+  SERVER_postgres: postgres-secondary.database.svc.cluster.local
+  PORT_postgres: "5432"
+  USER_postgres: sqllab_read
+  READONLY_postgres: "1"
+envFrom:
+  - secretRef: { name: sqllab-env }
 ports:
   - { name: http, containerPort: 3000 }
 probes:
-  startup: { httpGet: { path: /healthz, port: http }, periodSeconds: 10, failureThreshold: 30 }
-  readiness: { httpGet: { path: /healthz, port: http }, periodSeconds: 10 }
-  liveness: { httpGet: { path: /healthz, port: http }, periodSeconds: 30, timeoutSeconds: 10, failureThreshold: 6 }
+  readiness: { httpGet: { path: /, port: http }, periodSeconds: 10 }
+  liveness: { httpGet: { path: /, port: http }, periodSeconds: 20, failureThreshold: 6 }
 resources:
-  requests: { cpu: 100m, memory: 256Mi }
-  limits: { cpu: "1", memory: 2Gi }
+  requests: { cpu: 20m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 512Mi }
 volumes:
   - name: data
     persistentVolumeClaim: { claimName: sqllab }
 volumeMounts:
-  - { name: data, mountPath: /var/opt/bytebase }
+  - { name: data, mountPath: /root/.dbgate }
 networkPolicy:
   enabled: true
   policyTypes: [Ingress]
   ingress:
     - from:
         - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: cloudflared } }
-      ports:
-        - { port: 3000, protocol: TCP }
-    - from:
-        - podSelector: { matchLabels: { actions.github.com/scale-set-name: atlas-development } }
       ports:
         - { port: 3000, protocol: TCP }
