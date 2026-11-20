@@ -5,13 +5,13 @@ strategy: { type: Recreate }
 env:
   SKIP_ALL_AUTH: "1"
   CONNECTIONS: mariadb,postgres
-  LABEL_mariadb: MariaDB replica
+  LABEL_mariadb: MariaDB secondary
   ENGINE_mariadb: mysql@dbgate-plugin-mysql
   SERVER_mariadb: mariadb-secondary.database.svc.cluster.local
   PORT_mariadb: "3306"
   USER_mariadb: sqllab_read
   READONLY_mariadb: "1"
-  LABEL_postgres: PostgreSQL replica
+  LABEL_postgres: PostgreSQL secondary
   ENGINE_postgres: postgres@dbgate-plugin-postgres
   SERVER_postgres: postgres-secondary.database.svc.cluster.local
   PORT_postgres: "5432"
