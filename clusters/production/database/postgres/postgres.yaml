@@ -49,8 +49,6 @@ spec:
         inherit: true
         connectionLimit: -1
         passwordSecret: { name: postgres-url-shortener }
-      - name: sqllab
-        ensure: absent
       - name: sqllab_read
         ensure: present
         login: true
