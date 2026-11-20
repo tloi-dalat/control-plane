@@ -13,19 +13,6 @@ spec:
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: Grant
 metadata:
-  name: sqllab-write
-spec:
-  mariaDbRef: { name: mariadb }
-  username: sqllab_write
-  host: "10.42.%"
-  database: "*"
-  table: "*"
-  privileges: [PROCESS, SHOW DATABASES, REPLICATION CLIENT]
-  cleanupPolicy: Skip
----
-apiVersion: k8s.mariadb.com/v1alpha1
-kind: Grant
-metadata:
   name: sqllab-write-online-judge
 spec:
   mariaDbRef: { name: mariadb }

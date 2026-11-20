@@ -1,0 +1,40 @@
+image:
+  repository: dbgate/dbgate
+  tag: 7.3.4
+strategy: { type: Recreate }
+env:
+  SKIP_ALL_AUTH: "1"
+  CONNECTIONS: mariadb,postgres
+  LABEL_mariadb: MariaDB primary
+  ENGINE_mariadb: mysql@dbgate-plugin-mysql
+  SERVER_mariadb: mariadb-primary.database.svc.cluster.local
+  PORT_mariadb: "3306"
+  USER_mariadb: sqllab_write
+  LABEL_postgres: PostgreSQL primary
+  ENGINE_postgres: postgres@dbgate-plugin-postgres
+  SERVER_postgres: postgres-primary.database.svc.cluster.local
+  PORT_postgres: "5432"
+  USER_postgres: sqllab_write
+envFrom:
+  - secretRef: { name: sqllab-admin-env }
+ports:
+  - { name: http, containerPort: 3000 }
+probes:
+  readiness: { httpGet: { path: /, port: http }, periodSeconds: 10 }
+  liveness: { httpGet: { path: /, port: http }, periodSeconds: 20, failureThreshold: 6 }
+resources:
+  requests: { cpu: 20m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 512Mi }
+volumes:
+  - name: data
+    persistentVolumeClaim: { claimName: sqllab-admin }
+volumeMounts:
+  - { name: data, mountPath: /root/.dbgate }
+networkPolicy:
+  enabled: true
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: cloudflared } }
+      ports:
+        - { port: 3000, protocol: TCP }
