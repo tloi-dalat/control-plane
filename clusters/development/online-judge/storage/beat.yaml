@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: online-judge-beat
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 1Mi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-static
+  local:
+    path: /home/tloi/data/online-judge/beat
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - { key: tloi.vn/data-node, operator: In, values: ["true"] }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: beat
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  storageClassName: local-static
+  volumeName: online-judge-beat
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Mi
