@@ -1,0 +1,11 @@
+replicaCount: 1
+strategy: { type: Recreate }
+command: ["celery", "-A", "dmoj_celery", "beat", "-l", "info", "-s", "/beat/celerybeat-schedule"]
+resources:
+  requests: { cpu: 10m, memory: 128Mi }
+  limits: { cpu: 200m, memory: 384Mi }
+volumes:
+  - name: beat
+    persistentVolumeClaim: { claimName: beat }
+volumeMounts:
+  - { name: beat, mountPath: /beat }

@@ -4,3 +4,4 @@ resources:
   - storageclass.yaml
   - media.yaml
   - problems.yaml
+  - beat.yaml

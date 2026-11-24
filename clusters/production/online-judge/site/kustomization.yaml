@@ -24,6 +24,13 @@ helmCharts:
     releaseName: celery
     valuesFile: values.yaml
     additionalValuesFiles: [celery.yaml]
+  - repo: oci://ghcr.io/tloi-dalat/charts
+    name: app
+    version: 0.3.0
+    namespace: online-judge
+    releaseName: beat
+    valuesFile: values.yaml
+    additionalValuesFiles: [beat.yaml]
 patches:
   - target: { group: apps, kind: Deployment|StatefulSet }
     patch: |-
