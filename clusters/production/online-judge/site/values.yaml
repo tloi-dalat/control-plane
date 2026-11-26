@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/tloi-dalat/online-judge-site
-  tag: 0.8.3
+  tag: 0.8.4
 
 env:
   SITE_FULL_URL: https://oj.tloi.vn
