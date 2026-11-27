@@ -14,5 +14,5 @@ probes:
   readiness: { httpGet: { path: /ready, port: metrics }, periodSeconds: 10 }
 podSecurityContext: { runAsUser: 65532, runAsGroup: 65532, runAsNonRoot: true }
 resources:
-  requests: { cpu: 10m, memory: 32Mi }
-  limits: { cpu: 250m, memory: 128Mi }
+  requests: { cpu: 10m, memory: 64Mi }
+  limits: { cpu: 250m, memory: 512Mi }
